@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LP Generator Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh;transition:background .25s,color .25s}
+body.light{background:#F0F2FF;color:#1A1D35}
+body.dark{background:#0D0F1C;color:#E0E4FF}
+
+input,select,textarea{border-radius:8px;font-size:14px;font-family:inherit;padding:10px 13px;width:100%;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;display:block}
+body.light input,body.light select,body.light textarea{background:#F7F8FF;border:1.5px solid #DDE0F5;color:#1A1D35}
+body.dark input,body.dark select,body.dark textarea{background:#0A0C1A;border:1.5px solid #252A45;color:#E0E4FF}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-glow)!important}
+input::placeholder,textarea::placeholder{color:var(--text-muted);font-size:13px}
+textarea{resize:vertical;line-height:1.6}
+
+body.light{--bg:#F0F2FF;--surface:#fff;--card:#fff;--card-inner:#F5F7FF;--border:#DDE0F5;--accent:#4F6EF7;--accent-glow:rgba(79,110,247,.10);--text:#1A1D35;--text-sub:#5A6080;--text-muted:#9EA5C5;--green:#16A34A;--green-bg:rgba(22,163,74,.08);--amber:#B45309;--amber-bg:rgba(180,83,9,.08);--red:#DC2626;--red-bg:rgba(220,38,38,.08);--shadow:0 1px 3px rgba(0,0,20,.06),0 4px 16px rgba(79,100,247,.05);--input-bg:#F7F8FF;--code-bg:#F0F2FF;--code-text:#2D3561}
+body.dark{--bg:#0D0F1C;--surface:#13162A;--card:#181C32;--card-inner:#111428;--border:#252A45;--accent:#5B72F5;--accent-glow:rgba(91,114,245,.18);--text:#E0E4FF;--text-sub:#7880A8;--text-muted:#404670;--green:#22C55E;--green-bg:rgba(34,197,94,.12);--amber:#F59E0B;--amber-bg:rgba(245,158,11,.12);--red:#EF4444;--red-bg:rgba(239,68,68,.12);--shadow:none;--input-bg:#0A0C1A;--code-bg:#0A0C1A;--code-text:#A0AECF}
+
+.btn-p{background:linear-gradient(135deg,var(--accent),#7C5CF6);color:#fff;border:none;border-radius:8px;padding:11px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;transition:opacity .2s,transform .15s}
+.btn-p:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+.btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-s{background:transparent;color:var(--text-sub);border:1.5px solid var(--border);border-radius:8px;padding:10px 15px;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:border-color .2s,color .2s,background .2s}
+.btn-s:hover:not(:disabled){border-color:var(--accent);color:var(--text);background:var(--accent-glow)}
+.btn-s:disabled{opacity:.35;cursor:not-allowed}
+.btn-g{background:var(--green-bg);color:var(--green);border:1.5px solid rgba(22,163,74,.4);border-radius:8px;padding:11px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;transition:opacity .2s}
+.btn-g:hover:not(:disabled){opacity:.85}
+.btn-g:disabled{opacity:.35;cursor:not-allowed}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:10px}
+.card-inner{background:var(--card-inner);border-radius:8px;padding:11px 13px;border:1px solid var(--border)}
+.card-accent{border-color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent),var(--shadow)!important}
+
+.lbl{font-size:10.5px;font-weight:600;letter-spacing:.7px;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:6px}
+.tag-g{display:inline-block;padding:2px 9px;border-radius:4px;font-size:10px;font-weight:700;background:var(--green-bg);color:var(--green)}
+.tag-b{display:inline-block;padding:2px 9px;border-radius:4px;font-size:10px;font-weight:700;background:var(--accent-glow);color:var(--accent)}
+
+.g4{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.frow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.mb8{margin-bottom:8px}
+.mb14{margin-bottom:14px}
+
+.stepper{display:flex;align-items:center;margin-bottom:1.75rem;overflow-x:auto}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s;border:2px solid var(--border);background:transparent;color:var(--text-muted)}
+.step-dot.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff;cursor:pointer}
+.step-dot.clickable{cursor:pointer}
+.step-lbl{font-size:12px;white-space:nowrap;margin-left:7px;color:var(--text-muted)}
+.step-lbl.active{color:var(--text);font-weight:600}
+.step-lbl.done{color:var(--green)}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 10px;transition:background .3s;min-width:16px}
+.step-line.done{background:var(--green)}
+
+.toggle-track{width:40px;height:22px;border-radius:11px;cursor:pointer;transition:background .25s;flex-shrink:0;position:relative;background:var(--border)}
+.toggle-track.on{background:var(--accent)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.toggle-thumb.on{left:21px}
+
+.scroll-a{max-height:380px;overflow-y:auto;scrollbar-width:thin}
+.scroll-a::-webkit-scrollbar{width:4px}
+.scroll-a::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.pulse{animation:pulse 1.3s ease-in-out infinite}
+
+.error-box{padding:11px 14px;background:var(--red-bg);border:1px solid rgba(220,38,38,.3);border-radius:8px;margin-bottom:1.25rem;font-size:13px;color:var(--red);display:flex;gap:8px}
+.success-box{padding:12px 16px;background:var(--green-bg);border:1px solid rgba(22,163,74,.3);border-radius:8px;font-size:13px;color:var(--green)}
+.info-box{padding:10px 14px;background:var(--amber-bg);border:1px solid rgba(180,83,9,.3);border-radius:8px;font-size:12.5px;color:var(--amber);line-height:1.6}
+.info-note{font-size:11px;color:var(--text-muted);margin-top:5px;line-height:1.5}
+
+.vant-card{background:var(--card-inner);border-radius:8px;padding:11px 13px;border:1px solid var(--border);border-top:2px solid var(--accent)}
+.rev-card{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)}
+.rev-card:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+
+.apikey-banner{padding:10px 14px;background:var(--amber-bg);border:1px solid rgba(180,83,9,.3);border-radius:8px;font-size:12.5px;color:var(--amber);margin-bottom:1.25rem;line-height:1.6}
+
+.dl-link{display:inline-flex;align-items:center;gap:7px;padding:11px 18px;background:linear-gradient(135deg,var(--green),#059669);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+.rl-link{display:inline-flex;align-items:center;gap:7px;padding:10px 15px;background:var(--green-bg);color:var(--green);border:1.5px solid rgba(22,163,74,.4);border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+
+.result-link{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;background:var(--accent-glow);color:var(--accent);border:1px solid rgba(79,110,247,.3);border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;margin-top:10px}
+
+@media(max-width:640px){
+  .g4{grid-template-columns:1fr 1fr}
+  .g4>:first-child{grid-column:1/-1}
+  .g2{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr}
+  .frow{flex-direction:column;align-items:stretch}
+  .frow button,.frow a{width:100%;justify-content:center}
+  .step-lbl{display:none}
+}
+</style>
+</head>
+<body class="light">
+<div id="app" style="max-width:900px;margin:0 auto;padding:1.25rem 1rem"></div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────
+const COUNTRIES = [["it","🇮🇹 Italia"],["es","🇪🇸 Spagna"],["fr","🇫🇷 Francia"],["de","🇩🇪 Germania"],["pt","🇵🇹 Portogallo"],["ro","🇷🇴 Romania"]];
+const MODEL = "claude-sonnet-4-20250514";
+
+const SYS_RESEARCH = `Sei un esperto ricercatore di mercato per campagne di affiliazione COD italiane ed europee. Analizzi prodotti di consumo per un target over 50 a bassa scolarizzazione. Cerchi tensioni di mercato reali: cosa vuole il cliente ma teme, quali caratteristiche premium esistono nei modelli top ma non sono mai tutte insieme in un prodotto consumer. Rispondi sempre in italiano, in modo strutturato, concreto e pratico.`;
+
+const SYS_COPY = `Sei il miglior copywriter italiano per landing page COD su Meta Ads. Target: over 50, bassa scolarizzazione. Linguaggio semplice, emotivo, specifico. Mai tecnicismi vuoti.
+REGOLA TITOLO: Formula: [categoria] + [spec premium che di solito ha un limite] + [limite risolto] + [3-4 caratteristiche che smontano paure specifiche over 50].
+REGOLA BULLET: caratteristiche premium reali con numeri/materiali/tecnologie, scritte semplice. Prima la caratteristica in grassetto con il nome tecnico, poi il beneficio concreto.
+REGOLA RECENSIONI: ogni recensione risolve una specifica obiezione del target attraverso un'esperienza personale realistica.
+REGOLA FAQ: rispondono alle paure reali di un over 50.
+Rispondi SOLO con JSON valido. Nessun backtick, nessun markdown, nessun testo prima o dopo.`;
+
+// ── STATE ─────────────────────────────────────────────────────────
+const state = {
+  dark: false,
+  step: 1,
+  maxStep: 1,
+  apiKey: localStorage.getItem('lpg_apikey') || '',
+  form: { product:'', price:'', originalPrice:'', country:'it', brief:'' },
+  research: '',
+  copy: null,
+  loading: false,
+  loadingMsg: '',
+  error: '',
+  wpConfig: JSON.parse(localStorage.getItem('lpg_wp') || '{"url":"","username":"","appPassword":""}'),
+  showSettings: false,
+  wpTestResult: null,
+  wpTesting: false,
+  publishResult: null,
+  publishing: false,
+  done: false,
+  downloadLink: null,
+  researchLink: null,
+  showImportResearch: false,
+  importedResearch: '',
+  sessionRestored: false,
+};
+
+// ── API ───────────────────────────────────────────────────────────
+async function apiCall(system, messages, useWebSearch = false) {
+  const body = { model: MODEL, max_tokens: 4000, system, messages };
+  if (useWebSearch) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': state.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+function extractText(data) {
+  return (data.content || []).map(b => b.type === 'text' ? b.text : '').filter(Boolean).join('\n');
+}
+
+function parseJSON(text) {
+  try { return JSON.parse(text.trim()); } catch {}
+  const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  try { return JSON.parse(clean); } catch {}
+  const s = clean.indexOf('{'), e = clean.lastIndexOf('}');
+  if (s === -1 || e === -1) throw new Error('Risposta non in JSON: ' + clean.slice(0, 150));
+  try { return JSON.parse(clean.slice(s, e + 1)); }
+  catch (err) { throw new Error('JSON malformato: ' + err.message); }
+}
+
+// ── SESSION ───────────────────────────────────────────────────────
+function saveSession() {
+  try {
+    localStorage.setItem('lpg_session', JSON.stringify({
+      form: state.form,
+      research: state.research,
+      copy: state.copy,
+      step: state.step,
+      maxStep: state.maxStep,
+    }));
+  } catch {}
+}
+
+function loadSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem('lpg_session') || 'null');
+    if (!s) return false;
+    if (s.form) state.form = s.form;
+    if (s.research) state.research = s.research;
+    if (s.copy) state.copy = s.copy;
+    if (s.step && s.step > 1) {
+      state.step = s.step;
+      state.maxStep = s.maxStep || s.step;
+      state.sessionRestored = true;
+    }
+    return true;
+  } catch { return false; }
+}
+
+function clearSession() {
+  localStorage.removeItem('lpg_session');
+  state.form = { product:'', price:'', originalPrice:'', country:'it', brief:'' };
+  state.research = ''; state.copy = null;
+  state.step = 1; state.maxStep = 1;
+  state.error = ''; state.done = false;
+  state.sessionRestored = false;
+  state.downloadLink = null; state.researchLink = null;
+  render();
+}
+
+function goToStep(n) {
+  state.step = n;
+  state.maxStep = Math.max(state.maxStep, n);
+}
+
+// ── INJECT ────────────────────────────────────────────────────────
+function injectCopy(template, copy) {
+  const json = JSON.parse(JSON.stringify(template));
+  function walk(elements) {
+    if (!Array.isArray(elements)) return;
+    for (const el of elements) {
+      if (!el || typeof el !== 'object') continue;
+      const cfg = el.settings || {};
+      const css = cfg._css_classes || cfg.css_classes || '';
+      const wt = el.widgetType || '';
+
+      if (wt === 'deensimc-smooth-text' && Array.isArray(copy.marquee))
+        cfg.deensimc_repeater_text_main = copy.marquee.map((t,i) => ({ deensimc_repeater_text: t, _id: `mq_${i}` }));
+      if (css === 'Nome-Prodotto') cfg.title = copy.brandName;
+      if (css === 'Titolo-Prodotto') cfg.title = copy.headline;
+      if (css === 'Sottotitolo-Prodotto') cfg.title = copy.subtitle;
+      if (css === 'scritto-da') cfg.title = copy.scrittoDA;
+      if (css === 'bullet-caratteristiche-prodotto' && Array.isArray(copy.bullets))
+        cfg.icon_list = copy.bullets.map((b,i) => ({ text: b, selected_icon: { value: 'fas fa-check-circle', library: 'fa-solid' }, _id: `bl_${i}` }));
+      if (css === 'pulsante-cta') cfg.text = copy.ctaText || 'ATTIVA LO SCONTO';
+      if (css === 'Pricing-Table' && copy.pricing) {
+        cfg.eael_pricing_table_title = copy.pricing.title;
+        cfg.eael_pricing_table_price = copy.pricing.prezzoOriginale;
+        cfg.eael_pricing_table_onsale = 'yes';
+        cfg.eael_pricing_table_onsale_price = copy.pricing.prezzoScontato;
+        if (Array.isArray(copy.pricing.items))
+          cfg.eael_pricing_table_items = copy.pricing.items.map((item,i) => ({ eael_pricing_table_item: item, _id: `pkg_${i}`, eael_pricing_item_tooltip_content: '', pricing_item_tooltip_animation_duration: 300, eael_pricing_table_list_icon_new: { value: 'fas fa-check-circle', library: 'fa-solid' } }));
+      }
+      if (wt === 'text-editor' && (cfg.editor || '').includes('Ordinando'))
+        cfg.editor = `<p>${copy.cosRicevi || 'Ordinando Ora Ricevi:'}</p>`;
+      if (css === 'titolo-vantaggio-01' && copy.vantaggi?.[0]) cfg.title = copy.vantaggi[0].titolo;
+      if (css === 'titolo-vantaggio-02' && copy.vantaggi?.[1]) cfg.title = copy.vantaggi[1].titolo;
+      if (css === 'titolo-vantaggio-03' && copy.vantaggi?.[2]) cfg.title = copy.vantaggi[2].titolo;
+      if (css === 'descrizione-vantaggio-01' && copy.vantaggi?.[0]) cfg.editor = copy.vantaggi[0].testo;
+      if (css === 'descrizione-vantaggio-02' && copy.vantaggi?.[1]) cfg.editor = copy.vantaggi[1].testo;
+      if (css === 'descrizione-vantaggio-03' && copy.vantaggi?.[2]) cfg.editor = copy.vantaggi[2].testo;
+      if (css === 'domande-faq' && Array.isArray(copy.faq))
+        cfg.tabs = copy.faq.map((f,i) => ({ tab_title: f.domanda, tab_content: `<p>${f.risposta}</p>`, _id: `faq_${i}` }));
+
+      // deensimc-testimonial
+      if (wt === 'deensimc-testimonial' && Array.isArray(copy.recensioni)) {
+        const femaleNamesT = ['maria','anna','elena','giulia','laura','sara','francesca','chiara','martina','valentina','paola','rosa','roberta','angela','lucia','carla','silvia','monica','daniela','stefania','cristina','barbara','alessandra','giovanna','rita','antonella','federica','simona','serena','ilaria','beatrice','marta','elisa','concetta','carmela','giuseppina','rosaria','mirella','ornella','silvana','sandra'];
+        const getGenderT = nome => {
+          const first = (nome||'').split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
+          if (femaleNamesT.includes(first)) return 'women';
+          if (first.endsWith('a') && !['luca','andrea','mattia','nicola','enrica','gianluca'].includes(first)) return 'women';
+          return 'men';
+        };
+        const womenPool = [23,44,67,12,38,55,29,48,71,8];
+        const menPool = [51,32,18,65,41,7,27,59,14,43];
+        const usedW = [], usedM = [];
+        cfg.deensimc_repeater_testimonial_main = copy.recensioni.map((r,i) => {
+          const g = getGenderT(r.nome);
+          const pool = g==='women' ? womenPool : menPool;
+          const used = g==='women' ? usedW : usedM;
+          const avN = pool.find(n => !used.includes(n)) || pool[i % pool.length];
+          used.push(avN);
+          return {
+            deensimc_testimonial_name: r.nome,
+            deensimc_testimonial_title: r.eta_citta,
+            deensimc_testimonial_content: r.testo,
+            deensimc_testimonial_show_rating: 'yes',
+            deensimc_testimonial_rating_num: r.stelle,
+            deensimc_testimonial_image: { id: '', url: `https://randomuser.me/api/portraits/${g}/${avN}.jpg`, source: 'url', size: '' },
+            deensimc_testimonial_rating_in_text: '',
+            _id: `rec_${i}`
+          };
+        });
+      }
+
+      // rece-01: Google review card (container con children)
+      if (css === 'rece-01' && copy.recensioni?.[0]) {
+        const r = copy.recensioni[0];
+        const stars = '★'.repeat(r.stelle||5) + '☆'.repeat(5-(r.stelle||5));
+        const femaleNamesR = ['maria','anna','elena','giulia','laura','sara','francesca','chiara','martina','valentina','paola','rosa','roberta','angela','lucia','carla','silvia','monica','daniela','stefania','cristina','barbara','alessandra','giovanna','rita','antonella','federica','simona','serena','ilaria','beatrice','marta','elisa','concetta','carmela'];
+        const firstR = (r.nome||'').split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
+        const genderR = femaleNamesR.includes(firstR)||(firstR.endsWith('a')&&!['luca','andrea','mattia','nicola'].includes(firstR))?'women':'men';
+        const avNR = (r.nome.length*7+r.nome.charCodeAt(0)*3)%70+1;
+        const avatarUrl = `https://randomuser.me/api/portraits/${genderR}/${avNR}.jpg`;
+        const walkRece = els => {
+          if (!Array.isArray(els)) return;
+          let hc = 0;
+          for (const child of els) {
+            if (!child||typeof child!=='object') continue;
+            const cCfg = child.settings||{};
+            const cWt = child.widgetType||'';
+            if (cWt==='heading') { if(hc===0) cCfg.title=r.nome; if(hc===1) cCfg.title=r.eta_citta; hc++; }
+            if (cWt==='text-editor'&&cCfg.editor!==undefined) cCfg.editor=`<p>${r.testo}</p>`;
+            if (cWt==='image'&&cCfg.image) {
+              const u=cCfg.image.url||'';
+              if (!u.includes('logo')&&!u.includes('google')&&!u.includes('Google')&&!u.includes('SEGNAPOSTO'))
+                cCfg.image={...cCfg.image,id:'',url:avatarUrl};
+            }
+            walkRece(child.elements||[]);
+          }
+        };
+        walkRece(el.elements||[]);
+      }
+
+      if (css === 'indirizzo-footer' && copy.azienda) {
+        const a = copy.azienda;
+        cfg.editor = `<p><span style="color:#808080;">${a.via}</span></p><p><span style="color:#808080;">${a.citta}</span></p><p><span style="color:#808080;">Orari: ${a.orari}</span></p><p><span style="color:#808080;">Contattaci: <a style="color:#808080;" href="mailto:${a.email}">${a.email}</a></span></p>`;
+      }
+      if (css === 'copy' && copy.azienda)
+        cfg.editor = `<p><span style="color:#808080;"><strong>© Copyright ${new Date().getFullYear()} ${copy.azienda.nome}</strong></span></p>\n<p><span style="color:#808080;"><strong>Tutti i Diritti Riservati</strong></span></p>`;
+
+      if (wt === 'deensimc-smooth-text')
+        cfg.custom_css = '.elementor-widget-deensimc-smooth-text{padding-bottom:0!important;margin-bottom:0!important;}';
+
+      if (Array.isArray(el.elements)) walk(el.elements);
+    }
+  }
+  walk(json.content);
+  json.title = `LP - ${copy.brandName} - ${new Date().toISOString().slice(0,10)}`;
+  return json;
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────
+async function runResearch() {
+  if (!state.form.product || !state.form.price || !state.apiKey) return;
+  state.loading = true; state.loadingMsg = 'Ricerca mercato in corso...'; state.error = ''; render();
+  const brief = state.form.brief.trim() ? `\n\nBRIEF SPECIFICO:\n${state.form.brief}\n\nSe cita modelli specifici, cercali online.` : '';
+  try {
+    const data = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Analizza il mercato di "${state.form.product}" per costruire il prodotto ideale per una LP COD italiana. Target: over 50, bassa scolarizzazione.${brief}\n\nCerca online e rispondi con:\n## TENSIONI DI MERCATO\nMin 5 tensioni: cosa vuole → perché lo teme → come risolverla.\n## CARATTERISTICHE PREMIUM DEI MODELLI TOP\nNome tecnico + perché importante per over 50.\n## PAURE E OBIEZIONI OVER 50\nLe 5 paure principali acquistando online COD.\n## SPECIFICHE TECNICHE CHE DANNO CREDIBILITÀ\nNumeri, materiali, certificazioni reali.\n## ACCESSORI E OMAGGI IDEALI\n## 3 ANGOLI DI VENDITA PIÙ EFFICACI` }], true);
+    if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+    state.research = extractText(data);
+    if (!state.research) throw new Error('Nessuna risposta');
+    goToStep(2); saveSession();
+  } catch(e) { state.error = 'Errore ricerca: ' + e.message; }
+  finally { state.loading = false; render(); }
+}
+
+async function generateCopy() {
+  if (!state.apiKey) return;
+  state.loading = true; state.loadingMsg = 'Costruendo il prodotto ideale...'; state.error = ''; render();
+  const origPrice = state.form.originalPrice || String(Math.round(parseInt(state.form.price)*2));
+  try {
+    const data = await apiCall(SYS_COPY, [{ role:'user', content:`Prodotto: ${state.form.product}\nPrezzo scontato: ${state.form.price}€ | Prezzo originale: ${origPrice}€ | Paese: ${state.form.country}\n${state.form.brief?`\nBRIEF:\n${state.form.brief}\n`:''}\nANALISI DI MERCATO:\n${state.research}\n\nJSON puro:\n{"brandName":"NomeProdotto™","headline":"titolo lungo: categoria+spec premium+limite risolto+3-4 caratteristiche over 50","subtitle":"specifiche aggiuntive max 30 parole","bullets":["<b>Spec tecnica</b>: beneficio over 50","<b>Car 2</b>: ben 2","<b>Car 3</b>: ben 3","<b>Car 4</b>: ben 4","<b>Car 5</b>: ben 5"],"ctaText":"ATTIVA LO SCONTO","marquee":["✨ punto di forza specifico","✨ Sconto Attivo","💸 Pagamento in Contrassegno"],"vantaggi":[{"titolo":"Tensione principale risolta","testo":"<p>4-5 frasi semplici con <strong>parole chiave</strong>.</p>"},{"titolo":"Vantaggio 2","testo":"<p>Testo 2</p>"},{"titolo":"Vantaggio 3","testo":"<p>Testo 3</p>"}],"faq":[{"domanda":"Paura reale over 50","risposta":"Risposta max 2 frasi"},{"domanda":"Dom 2","risposta":"Risp 2"},{"domanda":"Dom 3","risposta":"Risp 3"},{"domanda":"Dom 4","risposta":"Risp 4"},{"domanda":"Dom 5","risposta":"Risp 5"},{"domanda":"Dom 6","risposta":"Risp 6"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro 30 giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"scrittoDA":"Scritto da Nome Cognome - Ruolo esperto","pricing":{"title":"Solo per Oggi - 50%","prezzoOriginale":"${origPrice}","prezzoScontato":"${state.form.price}","items":["1 NomeProdotto™","Accessorio omaggio 1","Accessorio omaggio 2","Manuale in italiano","Garanzia 2 anni"]},"cosRicevi":"Ordinando Ora Ricevi:","recensioni":[{"nome":"Nome italiano","eta_citta":"XX anni, Città","testo":"40-50 parole che risolvono obiezione principale","stelle":5},{"nome":"Nome 2","eta_citta":"XX anni, Città","testo":"Risolve obiezione 2","stelle":5},{"nome":"Nome 3","eta_citta":"XX anni, Città","testo":"Risolve obiezione 3","stelle":4}],"azienda":{"nome":"Azienda Srl coerente con nicchia","via":"Via reale, numero","citta":"CAP Città Provincia","orari":"Lun-Ven 09:00 - 18:30","email":"assistenza@dominio.it"}}` }]);
+    if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+    const text = extractText(data);
+    if (!text.trim()) throw new Error('Risposta vuota — riprova');
+    state.copy = parseJSON(text);
+    goToStep(3); saveSession();
+  } catch(e) { state.error = 'Errore copy: ' + e.message; }
+  finally { state.loading = false; render(); }
+}
+
+function prepareDownload() {
+  if (!state.copy) { state.error = 'Copy non generato'; render(); return; }
+  try {
+    const result = injectCopy(window.EMBEDDED_TEMPLATE, state.copy);
+    const jsonStr = JSON.stringify(result, null, 2);
+    const slug = (state.copy.brandName||'lp').replace(/[™®\s]+/g,'-').toLowerCase();
+    const filename = `LP-${slug}-${new Date().toISOString().slice(0,10)}.json`;
+    const uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(jsonStr);
+    state.downloadLink = { uri, filename, jsonStr };
+    state.done = true; state.error = '';
+  } catch(e) { state.error = 'Errore injection: ' + e.message; }
+  render();
+}
+
+function prepareResearchLink() {
+  if (!state.research) return;
+  const slug = (state.form.product||'ricerca').replace(/[^a-z0-9]/gi,'-').toLowerCase().slice(0,30);
+  const filename = `Ricerca-${slug}-${new Date().toISOString().slice(0,10)}.txt`;
+  const uri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(state.research);
+  state.researchLink = { uri, filename };
+  render();
+}
+
+function useImportedResearch() {
+  if (!state.importedResearch.trim()) return;
+  state.research = state.importedResearch.trim();
+  goToStep(2); saveSession();
+  state.showImportResearch = false;
+  state.importedResearch = '';
+  render();
+}
+
+function saveWP() {
+  localStorage.setItem('lpg_wp', JSON.stringify(state.wpConfig));
+  state.wpTestResult = { ok: true, msg: 'Credenziali salvate ✓' };
+  setTimeout(() => { state.wpTestResult = null; render(); }, 2000);
+  render();
+}
+
+async function testWP() {
+  state.wpTesting = true; state.wpTestResult = null; render();
+  try {
+    const url = state.wpConfig.url.replace(/\/$/,'');
+    const creds = btoa(`${state.wpConfig.username}:${state.wpConfig.appPassword.replace(/\s/g,'')}`);
+    const res = await fetch(`${url}/wp-json/lpgen/v1/test`, { headers: { Authorization: `Basic ${creds}` } });
+    if (!res.ok) throw new Error(`Errore ${res.status}`);
+    const data = await res.json();
+    state.wpTestResult = { ok: true, msg: data.message || 'Connessione OK ✓' };
+  } catch(e) { state.wpTestResult = { ok: false, msg: e.message }; }
+  state.wpTesting = false; render();
+}
+
+async function publishWP() {
+  if (!state.copy) return;
+  state.publishing = true; state.publishResult = null; render();
+  try {
+    const injected = injectCopy(window.EMBEDDED_TEMPLATE, state.copy);
+    const url = state.wpConfig.url.replace(/\/$/,'');
+    const creds = btoa(`${state.wpConfig.username}:${state.wpConfig.appPassword.replace(/\s/g,'')}`);
+    const res = await fetch(`${url}/wp-json/lpgen/v1/create-page`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Basic ${creds}` },
+      body: JSON.stringify({ title: `${state.copy.brandName} — LP`, elementor_data: JSON.stringify(injected.content) }),
+    });
+    if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.message||`HTTP ${res.status}`); }
+    state.publishResult = { ok: true, ...(await res.json()) };
+  } catch(e) { state.publishResult = { ok: false, msg: e.message }; }
+  state.publishing = false; render();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+    if (k==='class') e.className=v;
+    else if (k.startsWith('on')) e[k]=v;
+    else if (k==='style'&&typeof v==='object') Object.assign(e.style,v);
+    else if (k==='html') e.innerHTML=v;
+    else e.setAttribute(k,v);
+  });
+  children.flat().forEach(c => { if(c!==null&&c!==undefined&&c!==false) e.appendChild(typeof c==='string'?document.createTextNode(c):c); });
+  return e;
+}
+
+function lbl(text) { return el('span',{class:'lbl'},text); }
+function card(children, cls='') { return el('div',{class:`card ${cls}`},...(Array.isArray(children)?children:[children])); }
+function btn(cls,label,onclick,disabled=false) {
+  const b = el('button',{class:cls,onclick},...(Array.isArray(label)?label:[label]));
+  if(disabled) b.disabled=true; return b;
+}
+function inp(placeholder,value,oninput,type='text') {
+  const e=el('input',{type,placeholder,value}); e.oninput=oninput; return e;
+}
+function ta(placeholder,value,oninput,rows=5) {
+  const e=document.createElement('textarea');
+  e.rows=rows; e.placeholder=placeholder; e.value=value; e.oninput=oninput; return e;
+}
+
+function renderSettings() {
+  if (!state.showSettings) return el('div',{});
+  const wpReady = state.wpConfig.url && state.wpConfig.username && state.wpConfig.appPassword;
+  return card([
+    el('div',{style:{fontSize:'14px',fontWeight:'600',marginBottom:'12px',display:'flex',alignItems:'center',gap:'8px'}},
+      '⚙ Impostazioni',
+      wpReady ? el('span',{class:'tag-g'},'WordPress OK') : ''
+    ),
+    el('div',{style:{marginBottom:'14px'}},
+      lbl('Anthropic API Key'),
+      inp('sk-ant-...', state.apiKey, e => { state.apiKey=e.target.value; localStorage.setItem('lpg_apikey',state.apiKey); }, 'password'),
+      el('div',{class:'info-note'},'Ottienila su console.anthropic.com → API Keys')
+    ),
+    el('div',{class:'g3',style:{marginBottom:'12px'}},
+      el('div',{},lbl('URL sito WordPress'),inp('https://tuosito.it',state.wpConfig.url,e=>{state.wpConfig.url=e.target.value;},'url')),
+      el('div',{},lbl('Username admin WP'),inp('admin',state.wpConfig.username,e=>{state.wpConfig.username=e.target.value;})),
+      el('div',{},lbl('Application Password'),inp('xxxx xxxx xxxx...',state.wpConfig.appPassword,e=>{state.wpConfig.appPassword=e.target.value;},'password')),
+    ),
+    el('div',{class:'frow',style:{marginBottom:state.wpTestResult?'10px':'0'}},
+      btn('btn-p','Salva',saveWP,!wpReady),
+      btn('btn-s',state.wpTesting?'⏳ Test...':'⚡ Testa Connessione',testWP,state.wpTesting||!wpReady),
+    ),
+    state.wpTestResult ? el('div',{class:state.wpTestResult.ok?'success-box':'error-box',style:{marginTop:'10px'}},state.wpTestResult.msg) : el('div',{}),
+  ],'card-accent');
+}
+
+function renderStepper() {
+  const STEPS = ['Prodotto','Ricerca','Copy','Pubblica'];
+  const wrap = el('div',{class:'stepper'});
+  STEPS.forEach((s,i) => {
+    const st = state.step > i+1 ? 'done' : state.step === i+1 ? 'active' : '';
+    const canClick = i+1 <= state.maxStep;
+    const dot = el('div',{class:`step-dot ${st}${canClick&&st!=='active'?' clickable':''}`}, st==='done'?'✓':String(i+1));
+    const lblEl = el('span',{class:`step-lbl ${st}`},s);
+    const grp = el('div',{style:{display:'flex',alignItems:'center',cursor:canClick?'pointer':'default'}},dot,lblEl);
+    if (canClick && st !== 'active') grp.onclick = () => { state.step=i+1; render(); };
+    wrap.appendChild(grp);
+    if (i < STEPS.length-1) wrap.appendChild(el('div',{class:`step-line ${state.step>i+1?'done':''}`}));
+  });
+  return wrap;
+}
+
+function renderStep1() {
+  const canStart = state.form.product.trim() && state.form.price.trim() && state.apiKey.trim();
+  const origPrice = state.form.originalPrice||(state.form.price?String(Math.round(parseInt(state.form.price)*2)):'');
+  const sel = document.createElement('select');
+  COUNTRIES.forEach(([c,l]) => { const o=document.createElement('option'); o.value=c; o.text=l; if(c===state.form.country) o.selected=true; sel.appendChild(o); });
+  sel.oninput = e => state.form.country = e.target.value;
+  const startBtn = btn('btn-p',
+    state.loading ? [el('span',{class:'pulse'},'◉'),` ${state.loadingMsg}`] : ['🔍 Avvia Ricerca di Mercato'],
+    runResearch, !canStart||state.loading
+  );
+  startBtn.style.width='100%';
+
+  return el('div',{},
+    card([
+      el('div',{class:'g4'},
+        el('div',{},lbl('Tipo di prodotto *'),inp('es. luci solari, forbici da potatura...',state.form.product,e=>{state.form.product=e.target.value;})),
+        el('div',{},lbl('Prezzo scontato (€) *'),inp('99',state.form.price,e=>{state.form.price=e.target.value;},'number')),
+        el('div',{},lbl('Prezzo originale (€)'),inp('199',origPrice,e=>{state.form.originalPrice=e.target.value;},'number')),
+        el('div',{},lbl('Paese'),sel),
+      ),
+      el('div',{style:{marginBottom:'14px'}},
+        lbl('Brief specifico — opzionale'),
+        ta('Cita competitor, bundle, caratteristiche volute...',state.form.brief,e=>{state.form.brief=e.target.value;},5),
+        el('div',{class:'info-note'},'Se citi modelli reali, la ricerca li cerca online.')
+      ),
+      // Import research toggle
+      el('div',{style:{marginBottom:'12px'}},
+        btn('btn-s',state.showImportResearch?'▲ Annulla':'📋 Ho già una ricerca — Importa e salta',
+          ()=>{ state.showImportResearch=!state.showImportResearch; state.importedResearch=''; render(); }
+        ),
+        state.showImportResearch ? el('div',{style:{marginTop:'10px'}},
+          el('div',{style:{fontSize:'11.5px',color:'var(--text-sub)',marginBottom:'8px',lineHeight:'1.6'}},'Incolla una ricerca salvata per saltare la chiamata API.'),
+          ta('Incolla qui il testo della ricerca precedente...',state.importedResearch,e=>{state.importedResearch=e.target.value;},6),
+          el('div',{style:{marginTop:'8px'}},
+            btn('btn-g',!state.importedResearch.trim()?'✓ Usa questa ricerca':'✓ Usa questa ricerca → Vai al Copy',useImportedResearch,!state.importedResearch.trim())
+          )
+        ) : el('div',{})
+      ),
+      startBtn,
+    ]),
+    !state.apiKey.trim() ? el('div',{class:'apikey-banner'},'⚠ Imposta la tua Anthropic API Key nelle impostazioni ⚙ — console.anthropic.com → API Keys') : el('div',{}),
+    el('div',{style:{fontSize:'12px',color:'var(--text-muted)',lineHeight:'1.7',display:'flex',gap:'7px'}},
+      el('span',{style:{color:'var(--accent)',flexShrink:'0'}},'ℹ'),
+      'Web search in tempo reale: tensioni, caratteristiche premium, paure over 50. ~30-50 sec.'
+    )
+  );
+}
+
+function renderStep2() {
+  const preEl = document.createElement('pre');
+  preEl.style.cssText='font-family:system-ui,sans-serif;font-size:12.5px;line-height:1.8;white-space:pre-wrap;color:var(--text-sub)';
+  preEl.textContent = state.research;
+  return el('div',{},
+    el('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px',gap:'10px',flexWrap:'wrap'}},
+      el('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},
+        el('div',{style:{fontSize:'13px',fontWeight:'600'}},`Analisi di mercato — `),
+        el('span',{class:'tag-b'},state.form.product),
+        el('span',{style:{fontSize:'10px',color:'var(--green)',background:'var(--green-bg)',padding:'2px 8px',borderRadius:'4px',fontWeight:'600'}},'✓ Salvata')
+      ),
+      el('div',{class:'frow'},
+        btn('btn-s','← Modifica',()=>{state.step=1;render();}),
+        !state.researchLink
+          ? btn('btn-s','⬇ Salva Ricerca',prepareResearchLink)
+          : el('a',{href:state.researchLink.uri,download:state.researchLink.filename,class:'rl-link',onclick:()=>setTimeout(()=>{state.researchLink=null;render();},1000)},'⬇ Clicca per scaricare .txt'),
+        btn('btn-p',state.loading?[el('span',{class:'pulse'},'◉'),` ${state.loadingMsg}`]:['✨ Costruisci Prodotto + Copy'],generateCopy,state.loading),
+      )
+    ),
+    card([el('div',{class:'scroll-a'},preEl)])
+  );
+}
+
+function renderStep3() {
+  const c = state.copy;
+  if (!c) return el('div',{});
+  return el('div',{},
+    card([
+      el('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'12px',flexWrap:'wrap'}},
+        el('span',{style:{fontSize:'15px',fontWeight:'700'}},c.brandName),
+        el('span',{class:'tag-g'},'Generato'),
+        el('span',{style:{color:'var(--text-sub)',fontSize:'11px',marginLeft:'auto'}},c.scrittoDA)
+      ),
+      lbl('Headline'),
+      el('div',{class:'card-inner',style:{fontSize:'13.5px',lineHeight:'1.65',fontWeight:'600',marginBottom:'12px',borderLeft:'3px solid var(--accent)'}},c.headline),
+      lbl('Subtitle'),
+      el('div',{style:{color:'var(--text-sub)',fontSize:'13px'}},c.subtitle)
+    ],'card-accent'),
+    el('div',{class:'g2 mb14'},
+      card([
+        lbl('5 Bullet Points'),
+        ...(c.bullets||[]).map(b=>el('div',{style:{display:'flex',gap:'8px',marginBottom:'8px',fontSize:'12.5px',lineHeight:'1.5'}},
+          el('span',{style:{color:'var(--green)',flexShrink:'0'}},'✓'),
+          el('span',{html:b})
+        ))
+      ]),
+      el('div',{},
+        card([
+          lbl('Marquee'),
+          ...(c.marquee||[]).map(m=>el('div',{style:{color:'var(--text-sub)',fontSize:'12.5px',marginBottom:'4px'}},m)),
+        ]),
+        card([
+          lbl('Pricing'),
+          el('div',{style:{fontSize:'13px',marginBottom:'8px'}},
+            c.pricing?.title,' ',
+            el('s',{style:{color:'var(--text-muted)'}},c.pricing?.prezzoOriginale+'€'),' → ',
+            el('strong',{style:{color:'var(--green)',fontSize:'15px'}},c.pricing?.prezzoScontato+'€')
+          ),
+          lbl('Bundle'),
+          ...(c.pricing?.items||[]).map(item=>el('div',{style:{color:'var(--text-sub)',fontSize:'12.5px',marginBottom:'3px',display:'flex',gap:'6px'}},el('span',{style:{color:'var(--green)'}},'✓'),item)),
+        ])
+      )
+    ),
+    card([
+      lbl('3 Sezioni Vantaggio'),
+      el('div',{class:'g3'},
+        ...(c.vantaggi||[]).map(v=>el('div',{class:'vant-card'},
+          el('div',{style:{fontSize:'12.5px',fontWeight:'600',marginBottom:'6px'}},v.titolo),
+          el('div',{style:{color:'var(--text-sub)',fontSize:'12px',lineHeight:'1.6'},html:(v.testo||'').replace(/<\/?p>/g,'')})
+        ))
+      )
+    ]),
+    el('div',{class:'g2 mb14'},
+      card([
+        lbl('8 FAQ'),
+        ...(c.faq||[]).map((f,i)=>el('div',{style:{marginBottom:'8px',paddingBottom:'8px',borderBottom:i<(c.faq.length-1)?'1px solid var(--border)':'none'}},
+          el('div',{style:{fontSize:'12.5px',fontWeight:'600',marginBottom:'2px'}},f.domanda),
+          el('div',{style:{color:'var(--text-sub)',fontSize:'12px',lineHeight:'1.5'}},f.risposta)
+        ))
+      ]),
+      el('div',{},
+        card([
+          lbl('3 Recensioni'),
+          ...(c.recensioni||[]).map(r=>el('div',{class:'rev-card'},
+            el('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'3px',gap:'4px',flexWrap:'wrap'}},
+              el('span',{style:{fontSize:'12.5px',fontWeight:'600'}},r.nome),
+              el('span',{style:{color:'var(--text-muted)',fontSize:'11px'}},r.eta_citta)
+            ),
+            el('div',{style:{color:'var(--amber)',fontSize:'12px',marginBottom:'4px'}},'★'.repeat(r.stelle)+'☆'.repeat(5-r.stelle)),
+            el('div',{style:{color:'var(--text-sub)',fontSize:'12px',lineHeight:'1.5'}},r.testo)
+          ))
+        ]),
+        card([
+          lbl('Azienda Fittizia'),
+          el('div',{style:{fontSize:'13px',fontWeight:'600',marginBottom:'4px'}},c.azienda?.nome),
+          el('div',{style:{color:'var(--text-sub)',fontSize:'12px'}},`${c.azienda?.via}, ${c.azienda?.citta}`),
+          el('div',{style:{color:'var(--accent)',fontSize:'12px'}},c.azienda?.email),
+        ])
+      )
+    ),
+    el('div',{class:'frow'},
+      btn('btn-s','← Ricerca',()=>{state.step=2;render();}),
+      btn('btn-s',state.loading?'⏳ Rigenerando...':'↺ Rigenera',generateCopy,state.loading),
+      btn('btn-p','📦 Vai al Download / Pubblica →',()=>{goToStep(4);render();}),
+    )
+  );
+}
+
+function renderStep4() {
+  const wpReady = state.wpConfig.url && state.wpConfig.username && state.wpConfig.appPassword;
+  return el('div',{},
+    card([
+      el('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}},
+        el('div',{style:{fontSize:'14px',fontWeight:'600'}},'Template Elementor'),
+        el('span',{class:'tag-g'},'✓ LP-Final integrato')
+      ),
+      el('p',{style:{fontSize:'13px',color:'var(--text-sub)',lineHeight:'1.65'}},
+        'Il template base è integrato nel tool — ogni LP usa sempre il file corretto.'
+      )
+    ]),
+    state.copy ? el('div',{},
+      card([
+        lbl('Verrà iniettato'),
+        el('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'3px 16px'}},
+          ...[ ['Nome brand navbar',state.copy.brandName], ['Headline hero',(state.copy.headline||'').slice(0,45)+'...'],
+               ['5 bullet points','caratteristiche premium'], ['Marquee ×3',state.copy.marquee?.[0]],
+               ['Pricing ×2',`${state.copy.pricing?.prezzoScontato}€ (era ${state.copy.pricing?.prezzoOriginale}€)`],
+               ['3 vantaggi','titoli + testi'], ['8 FAQ','domande + risposte'],
+               ['3 recensioni','testimonial + avatar gender-aware'], ['rece-01','prima recensione hero'],
+               ['Azienda footer',state.copy.azienda?.nome],
+          ].map(([k,v])=>el('div',{style:{display:'flex',gap:'6px',fontSize:'12px',padding:'3px 0'}},
+            el('span',{style:{color:'var(--green)',flexShrink:'0'}},'✓'),
+            el('span',{},el('strong',{},k+': '),el('span',{style:{color:'var(--text-sub)'}},v))
+          ))
+        )
+      ]),
+      el('div',{class:'frow',style:{marginBottom:'1rem'}},
+        !state.downloadLink
+          ? btn('btn-p','⚙ Genera JSON',prepareDownload)
+          : el('a',{href:state.downloadLink.uri,download:state.downloadLink.filename,class:'dl-link',onclick:()=>setTimeout(()=>{state.done=true;state.downloadLink=null;render();},1000)},'⬇ Clicca per scaricare il JSON'),
+        wpReady
+          ? btn('btn-g',state.publishing?[el('span',{class:'pulse'},'◉'),' Pubblicando...']:['🚀 Pubblica su WordPress'],publishWP,state.publishing)
+          : btn('btn-s','⚙ Configura WordPress',()=>{state.showSettings=true;render();}),
+      ),
+      state.done && !state.downloadLink ? el('div',{class:'info-box',style:{marginBottom:'10px'}},
+        el('strong',{},'Come importare in Elementor:'),' WP Admin → ',el('strong',{},'Elementor → My Templates'),' → ',el('strong',{},'Import Templates'),' (in alto a destra) → seleziona il JSON → Insert.',
+        el('br',{}),
+        el('span',{style:{color:'var(--red)',fontSize:'11px'}},'⚠ Non usare la cartella dentro l\'editor — dà errore.')
+      ) : el('div',{}),
+      state.publishResult ? el('div',{class:state.publishResult.ok?'card':'error-box',style:state.publishResult.ok?{borderColor:'var(--green)'}:{}},
+        state.publishResult.ok
+          ? el('div',{},
+              el('div',{style:{fontSize:'14px',fontWeight:'600',color:'var(--green)',marginBottom:'8px'}},'✓ Bozza creata su WordPress!'),
+              el('p',{style:{color:'var(--text-sub)',fontSize:'13px',marginBottom:'10px',lineHeight:'1.6'}},'La pagina è in bozza. Aprila in Elementor per aggiungere le foto e pubblicarla.'),
+              el('a',{href:state.publishResult.edit_url,target:'_blank',class:'result-link'},'✏ Apri in Elementor →')
+            )
+          : el('div',{},
+              el('div',{style:{fontWeight:'600',marginBottom:'4px'}},'✕ Errore: '+state.publishResult.msg),
+              el('div',{class:'info-note'},'Verifica snippet PHP e credenziali nelle impostazioni ⚙')
+            )
+      ) : el('div',{})
+    ) : el('div',{class:'info-note',style:{padding:'12px 0'}},'← Genera prima il copy nello step 3')
+  );
+}
+
+function render() {
+  document.body.className = state.dark ? 'dark' : 'light';
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  // Header
+  app.appendChild(el('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:state.showSettings?'1rem':'1.75rem',gap:'10px'}},
+    el('div',{},
+      el('div',{style:{display:'flex',alignItems:'center',gap:'7px',marginBottom:'5px'}},
+        el('div',{style:{width:'6px',height:'6px',borderRadius:'50%',background:'var(--accent)'}}),
+        el('span',{style:{fontSize:'10px',fontWeight:'700',letterSpacing:'1.2px',color:'var(--accent)',textTransform:'uppercase'}},'Affiliate COD Tool')
+      ),
+      el('h1',{style:{fontSize:'22px',fontWeight:'700',letterSpacing:'-.3px',lineHeight:'1.2',marginBottom:'4px'}},'LP Generator Pro'),
+      el('p',{style:{color:'var(--text-sub)',fontSize:'12.5px',lineHeight:'1.5'}},'Ricerca → Prodotto ideale → Copy → Pubblica su WordPress')
+    ),
+    el('div',{style:{display:'flex',alignItems:'center',gap:'10px',flexShrink:'0'}},
+      btn('btn-s',state.showSettings?'✕':'⚙',()=>{state.showSettings=!state.showSettings;render();}),
+      el('div',{style:{display:'flex',alignItems:'center',gap:'7px'}},
+        el('span',{},'☀️'),
+        el('div',{class:`toggle-track ${state.dark?'on':''}`,onclick:()=>{state.dark=!state.dark;render();}},
+          el('div',{class:`toggle-thumb ${state.dark?'on':''}`})
+        ),
+        el('span',{},'🌙')
+      )
+    )
+  ));
+
+  // Settings
+  app.appendChild(renderSettings());
+
+  // Stepper
+  app.appendChild(renderStepper());
+
+  // Error
+  if (state.error) app.appendChild(el('div',{class:'error-box'},el('span',{},'⚠'),' '+state.error));
+
+  // Session restored banner
+  if (state.sessionRestored) app.appendChild(
+    el('div',{style:{padding:'10px 14px',background:'var(--green-bg)',border:'1px solid rgba(22,163,74,.3)',borderRadius:'8px',marginBottom:'1.25rem',fontSize:'13px',color:'var(--green)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px'}},
+      el('span',{},`✓ Sessione precedente ripristinata — step ${state.step}`),
+      el('div',{style:{display:'flex',gap:'6px'}},
+        el('button',{onclick:()=>{state.sessionRestored=false;render();},style:{background:'none',border:'none',cursor:'pointer',color:'var(--green)',fontSize:'13px'}},'OK'),
+        el('button',{onclick:clearSession,style:{background:'none',border:'1px solid rgba(22,163,74,.4)',borderRadius:'6px',cursor:'pointer',color:'var(--green)',fontSize:'12px',padding:'2px 10px'}},'Ricomincia')
+      )
+    )
+  );
+
+  // Step content
+  const content = state.step===1?renderStep1():state.step===2?renderStep2():state.step===3?renderStep3():renderStep4();
+  app.appendChild(content);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+// Load embedded template from JSX
+const EMBEDDED_TEMPLATE_PLACEHOLDER = '__TEMPLATE_PLACEHOLDER__';
+
+// Load session
+loadSession();
+render();
+</script>
+
+<!-- EMBEDDED TEMPLATE INJECTED BY BUILD SCRIPT -->
+<script id="tpl-data" type="application/json">
+{"content": [{"id": "6af8fbf9", "settings": {"background_background": "gradient", "__globals__": {"background_color": ""}, "background_color": "#00218D", "layout": "full_width", "custom_height_mobile": {"unit": "px", "size": 0, "sizes": []}, "background_color_b": "#007CE4", "background_color_b_stop_mobile": {"unit": "%", "size": ""}, "background_gradient_angle": {"unit": "deg", "size": 90, "sizes": []}, "background_gradient_angle_mobile": {"unit": "deg", "size": 90}}, "elements": [{"id": "6ce5db15", "settings": {"_column_size": 100, "_inline_size": null, "padding_mobile": {"unit": "px", "top": "5", "right": "5", "bottom": "5", "left": "5", "isLinked": true}}, "elements": [{"id": "121b396b", "settings": {"deensimc_repeater_text_main": [{"deensimc_repeater_text": "\u2728 Elettrodomestici scontati fino al 70%", "_id": "428f64f"}, {"deensimc_repeater_text": "\u2728 Sconto Attivo", "_id": "0f28785"}, {"deensimc_repeater_text": " \ud83d\udcb8 Pagamento in Contrassegno", "_id": "db2fa59"}], "deensimc_marquee_vertical_orientation": "", "deensimc_marquee_speed": 5, "deensimc_scroll_text_typography_typography": "custom", "deensimc_scroll_text_typography_font_family": "Montserrat", "deensimc_scroll_text_typography_font_size": {"unit": "px", "size": 14, "sizes": []}, "deensimc_scroll_text_typography_font_weight": "500", "deensimc_scroll_text_typography_letter_spacing": {"unit": "px", "size": 0, "sizes": []}, "deensimc_scroll_text_color": "#FFFFFF", "deensimc_icon_color": "#FFFFFF", "deensimc_icon_size": {"unit": "px", "size": 0, "sizes": []}, "deensimc_icon_spacing_from_content": {"unit": "px", "size": 29, "sizes": []}, "deensimc_marquee_gap": {"column": "35", "row": "5", "isLinked": false, "unit": "px"}, "deensimc_text_wrap_tablet": "", "deensimc_text_wrap_mobile": "", "deensimc_icon_adjust_vertical_position": {"unit": "px", "size": 0, "sizes": []}, "deensimc_icon_adjust_vertical_position_tablet": {"unit": "px", "size": "", "sizes": []}, "deensimc_icon_adjust_vertical_position_mobile": {"unit": "px", "size": "", "sizes": []}}, "elements": [], "isInner": false, "widgetType": "deensimc-smooth-text", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "712eda1b", "settings": {"background_background": "classic", "__globals__": {"background_color": ""}, "background_color": "#FFFFFF", "background_color_b": "#557AAF", "background_gradient_angle": {"unit": "deg", "size": 135, "sizes": []}, "border_border": "none", "border_radius": {"unit": "px", "top": "2", "right": "2", "bottom": "2", "left": "2", "isLinked": true}, "box_shadow_box_shadow_type": "yes", "box_shadow_box_shadow": {"horizontal": 0, "vertical": 16, "blur": 18, "spread": -14, "color": "rgba(0, 0, 0, 0.3)"}, "z_index": 100, "css_classes": "navbar-sticky", "custom_css": ".navbar-sticky {\r\n  position: sticky !important;\r\n  top: 0;\r\n  z-index: 9999;\r\n  background: #ffffff !important;\r\n  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);\r\n  transition: box-shadow 0.3s ease;\r\n}"}, "elements": [{"id": "6f747a1d", "settings": {"_column_size": 100, "_inline_size": null}, "elements": [{"id": "31919684", "settings": {"structure": "30"}, "elements": [{"id": "76e0ce16", "settings": {"_column_size": 33, "_inline_size": null, "_inline_size_mobile": 25, "content_position": "center", "content_position_tablet": "center", "content_position_mobile": "center", "margin_mobile": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "padding": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "padding_tablet": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "padding_mobile": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}}, "elements": [{"id": "23a50d17", "settings": {"image": {"id": "51048", "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/home4you-logo-1-1-1.png"}, "width": {"unit": "%", "size": 41, "sizes": []}, "width_mobile": {"unit": "%", "size": 100, "sizes": []}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}], "isInner": true, "elType": "column"}, {"id": "641d6fbc", "settings": {"_column_size": 33, "_inline_size": null, "_inline_size_mobile": 60, "content_position": "center", "content_position_tablet": "center", "content_position_mobile": "center", "align": "center"}, "elements": [{"id": "41b3a344", "settings": {"align": "center", "title": "Double Fryer XXL\u2122", "_margin": {"top": "0", "left": "10", "unit": "px", "right": "10", "bottom": "0", "isLinked": false}, "title_color": "#000000", "_css_classes": "Nome-Prodotto", "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_font_size": {"size": 1.1, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_font_size_mobile": {"size": 0.9, "unit": "rem", "sizes": []}, "typography_font_size_tablet": {"size": 1.2, "unit": "rem", "sizes": []}, "typography_letter_spacing_mobile": {"size": 0, "unit": "px", "sizes": []}, "_margin_tablet": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "cc3a4c8"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "717aa2c"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}], "isInner": true, "elType": "column"}, {"id": "3831255a", "settings": {"_column_size": 33, "_inline_size": null, "_inline_size_mobile": 15, "content_position": "center"}, "elements": [{"id": "75bfa8bf", "settings": {"selected_icon": {"value": "fas fa-cart-plus", "library": "fa-solid"}, "link": {"url": "#PUR", "is_external": "", "nofollow": "", "custom_attributes": ""}, "primary_color": "#24C91B", "size": {"unit": "px", "size": 25, "sizes": []}, "size_tablet": {"unit": "%", "size": "", "sizes": []}, "size_mobile": {"unit": "px", "size": 20, "sizes": []}, "__globals__": {"primary_color": ""}}, "elements": [], "isInner": false, "widgetType": "icon", "elType": "widget"}], "isInner": true, "elType": "column"}], "isInner": true, "elType": "section"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "226f16c1", "settings": {"background_color": "#FFFFFF", "background_background": "classic", "structure": "20"}, "elements": [{"id": "76ba08d", "settings": {"_column_size": 50, "_inline_size": null}, "elements": [{"id": "716aab38", "settings": {"image": {"id": "51049", "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/recensioni-1-1.png"}, "width": {"unit": "%", "size": 20, "sizes": []}, "width_tablet": {"unit": "%", "size": 30, "sizes": []}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}, {"id": "5af0448", "settings": {"align": "center", "title": "Media Recensioni Verificate: 4,8", "_margin": {"top": "0", "left": "10", "unit": "px", "right": "10", "bottom": "0", "isLinked": false}, "_margin_mobile": {"top": "-13", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_font_size": {"size": 16, "unit": "px", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_font_size_mobile": {"size": 0.9, "unit": "rem", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing_mobile": {"size": 0, "unit": "px", "sizes": []}, "typography_line_height": {"unit": "px", "size": 13, "sizes": []}, "__globals__": {"title_color": ""}, "title_color": "#000000", "_padding_mobile": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": false}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "3601a71"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "ce9c2bf"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "5dd6a206", "settings": {"carousel_name": "Carosello d&#039;immagini", "carousel": [{"id": "51027", "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/SEGNAPOSTO-1-1.jpg"}], "thumbnail_size": "full", "slides_to_show": "1", "navigation": "arrows", "_element_width": "initial", "_element_custom_width": {"unit": "%", "size": 99.266}}, "elements": [], "isInner": false, "widgetType": "image-carousel", "elType": "widget"}], "isInner": false, "elType": "column"}, {"id": "42b3a524", "settings": {"_column_size": 50, "_inline_size": null, "space_between_widgets": 10}, "elements": [{"id": "50185d23", "settings": {"align": "center", "title": "Friggitrice ad Aria XXL con doppio cestello asimmetrico che cucina pasti croccanti all'esterno e succosi all'interno risparmiando il 70% in bolletta ", "_margin": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": false}, "header_size": "h1", "title_color": "#000000", "_css_classes": "Titolo-Prodotto", "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_font_size": {"size": 1.6, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_font_size_mobile": {"size": 21, "unit": "px", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing_mobile": {"size": 0, "unit": "px", "sizes": []}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "3a50a9c"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "79a57c0"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "16a83f9a", "settings": {"align": "center", "title": "Non si limita solo a friggere, ma funziona anche come forno, essiccatore e persino modalit\u00e0 barbecue. Pu\u00f2 tostare, gratinare, cuocere al forno, arrostire, scongelare, essiccare e riscaldare", "_margin": {"top": "0", "left": "10", "unit": "px", "right": "10", "bottom": "0", "isLinked": false}, "title_color": "#000000", "_css_classes": "Sottotitolo-Prodotto", "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_font_size": {"size": 1.2, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "600", "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_font_size_mobile": {"size": 18, "unit": "px", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing_mobile": {"unit": "px", "size": -0.2, "sizes": []}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "f72efc7"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "8e49b5a"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "3946787", "settings": {"_margin": {"top": "10", "left": "0", "unit": "px", "right": "0", "bottom": "10", "isLinked": false}, "icon_list": [{"text": "<b>Capienza XXL:</b> puoi preparare comodamente un pasto completo per tutta la famiglia o ospiti occasionali.", "selected_icon": {"value": "fas fa-check-circle", "library": "fa-solid"}, "_id": "a6936f3"}, {"text": "<b>Doppio cestello asimmetrico </b>per cuocere il piatto principale su cestello grande e le pietanze sul secondo cestello senza mescolare sapori e tempi.", "selected_icon": {"value": "fas fa-check-circle", "library": "fa-solid"}, "_id": "fde4617"}, {"text": "<b>Modalit\u00e0 \u201cGrill\u201d integrata</b>: oltre alla frittura ad aria, puoi grigliare carne, pesce o verdure con risultati pi\u00f9 gustosi.", "selected_icon": {"value": "fas fa-check-circle", "library": "fa-solid"}, "_id": "6c3d006"}, {"text": "<b>8 programmi preimpostat</b>i: include modalit\u00e0 automatiche per patatine, pollo, verdure, pesce, dolci, disidratazione, grill e modalit\u00e0 manuale per impostare tempo/temperatura a piacere.", "selected_icon": {"value": "fas fa-check-circle", "library": "fa-solid"}, "_id": "7ec1c8b"}, {"text": "<b>Tecnologia Extra-Crisp per una croccantezza unica</b>: permette di ottenere pietanze dorate e croccanti con pochissimo o nessun olio (fino al 99 % di grassi in meno rispetto alla frittura tradizionale).", "selected_icon": {"value": "fas fa-check-circle", "library": "fa-solid"}, "_id": "c4511a5"}], "icon_size": {"size": 20, "unit": "px", "sizes": []}, "icon_align": "left", "icon_color": "#46B135", "text_color": "#000000", "__globals__": {"icon_color": ""}, "text_indent": {"size": 4, "unit": "px", "sizes": []}, "_css_classes": "bullet-caratteristiche-prodotto", "space_between": {"size": 9, "unit": "px", "sizes": []}, "_margin_mobile": {"top": "20", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "icon_self_align": "center", "icon_size_mobile": {"size": 20, "unit": "px", "sizes": []}, "space_between_mobile": {"size": 9, "unit": "px", "sizes": []}, "space_between_tablet": {"size": 10, "unit": "px", "sizes": []}, "icon_typography_font_size": {"size": 1, "unit": "rem", "sizes": []}, "icon_typography_typography": "custom", "icon_typography_font_family": "Montserrat", "icon_typography_font_weight": "500", "icon_typography_line_height": {"size": 1.3, "unit": "em", "sizes": []}, "icon_typography_word_spacing": {"size": 0.2, "unit": "em", "sizes": []}, "icon_typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "icon_self_vertical_align_mobile": "flex-start", "icon_typography_font_size_mobile": {"size": 16, "unit": "px", "sizes": []}, "icon_typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "icon_typography_line_height_mobile": {"size": 1.3, "unit": "em", "sizes": []}, "icon_self_vertical_align": "flex-start", "icon_self_vertical_align_tablet": "flex-start", "icon_typography_font_style": "normal"}, "elements": [], "isInner": false, "widgetType": "icon-list", "elType": "widget"}, {"id": "4427ca80", "settings": {"link": {"url": "#PUR", "nofollow": "", "is_external": "", "custom_attributes": ""}, "text": "ATTIVA LO SCONTO", "align": "center", "_margin": {"top": "10", "left": "0", "unit": "px", "right": "0", "bottom": "10", "isLinked": false}, "_css_classes": "pulsante-cta", "border_width": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "text_padding": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "border_border": "solid", "border_radius": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": true}, "_margin_tablet": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "_padding_tablet": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "background_color": "#B3EB00", "button_text_color": "#000000", "text_padding_mobile": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "text_padding_tablet": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "border_radius_mobile": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": false}, "border_radius_tablet": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": true}, "typography_font_size": {"size": 1.1, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_weight": "700", "typography_text_transform": "uppercase", "typography_font_size_mobile": {"size": 18, "unit": "px", "sizes": []}, "typography_font_size_tablet": {"size": 1.1, "unit": "rem", "sizes": []}, "button_box_shadow_box_shadow": {"blur": 3, "color": "#A8A8A8", "spread": 0, "vertical": 5, "horizontal": 0}, "typography_font_family": "Montserrat", "button_background_hover_color": "#44C700", "_margin_mobile": {"unit": "px", "top": "20", "right": "0", "bottom": "20", "left": "0", "isLinked": false}, "__globals__": {"button_background_hover_color": ""}, "hover_color": "#FFFFFF", "button_hover_box_shadow_box_shadow_type": "yes", "button_hover_box_shadow_box_shadow": {"horizontal": 0, "vertical": 6, "blur": 10, "spread": 0, "color": "rgba(0,0,0,0.5)"}, "button_box_shadow_box_shadow_type": "yes", "_animation": "rubberBand", "_animation_mobile": "fadeInUp"}, "elements": [], "isInner": false, "widgetType": "button", "elType": "widget"}, {"id": "6e1622fd", "settings": {"css_classes": "rece-01"}, "elements": [{"id": "304fd32e", "settings": {"flex_gap": {"column": "0", "row": "0", "isLinked": true, "unit": "px", "size": 0}, "background_background": "classic", "background_color": "#FFFFFF", "border_radius": {"unit": "px", "top": "20", "right": "20", "bottom": "20", "left": "20", "isLinked": true}, "box_shadow_box_shadow_type": "yes", "content_width": "full"}, "elements": [{"id": "19461ac8", "settings": {"content_width": "full", "flex_direction": "row", "flex_gap": {"column": "0", "row": "0", "isLinked": true, "unit": "px", "size": 0}, "border_radius": {"unit": "px", "top": "15", "right": "15", "bottom": "15", "left": "15", "isLinked": true}, "box_shadow_box_shadow": {"horizontal": 0, "vertical": 0, "blur": 4, "spread": 0, "color": "rgba(0,0,0,0.5)"}}, "elements": [{"id": "65a7e0e2", "settings": {"content_width": "full", "width": {"unit": "%", "size": 12}, "width_tablet": {"unit": "%", "size": 20, "sizes": []}, "width_mobile": {"unit": "%", "size": 20, "sizes": []}, "_flex_size": "none", "_element_width": "initial"}, "elements": [{"id": "18275fc0", "settings": {"image": {"id": 51110, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/28-6-1.jpg"}, "link": {"url": "https://randomuser.me/api/portraits/women/28.jpg", "is_external": "", "nofollow": "", "custom_attributes": ""}, "align": "start", "width": {"unit": "%", "size": 100, "sizes": []}, "image_border_radius": {"unit": "px", "top": "200", "right": "200", "bottom": "200", "left": "200", "isLinked": true}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}], "isInner": true, "elType": "container"}, {"id": "3fdbecbc", "settings": {"content_width": "full", "width": {"unit": "%", "size": 78, "sizes": []}, "width_tablet": {"unit": "%", "size": 65, "sizes": []}, "width_mobile": {"unit": "%", "size": 65, "sizes": []}, "flex_gap": {"column": "6", "row": "6", "isLinked": true, "unit": "px", "size": 6}}, "elements": [{"id": "32264da0", "settings": {"title": "Roberta G.", "typography_typography": "custom", "typography_font_family": "Arial", "typography_font_size": {"unit": "px", "size": 15, "sizes": []}, "typography_font_weight": "600", "title_color": "#000000", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "588271d"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "b00e0d5"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "285c6ada", "settings": {"title": "5 Giorni fa", "typography_typography": "custom", "typography_font_family": "Arial", "typography_font_size": {"unit": "px", "size": 11, "sizes": []}, "typography_font_weight": "600", "title_color": "#969696", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "588271d"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "b00e0d5"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}], "isInner": true, "elType": "container"}, {"id": "5b365556", "settings": {"content_width": "full", "width": {"unit": "%", "size": 10, "sizes": []}, "width_tablet": {"unit": "%", "size": 15, "sizes": []}, "width_mobile": {"unit": "%", "size": 15, "sizes": []}}, "elements": [{"id": "71355690", "settings": {"image": {"id": "51051", "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/Google__G__logo-1.png"}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}], "isInner": true, "elType": "container"}], "isInner": true, "elType": "container"}, {"id": "405e94af", "settings": {"content_width": "full", "flex_direction": "row", "flex_gap": {"column": "0", "row": "0", "isLinked": true, "unit": "px", "size": 0}, "border_radius": {"unit": "px", "top": "15", "right": "15", "bottom": "15", "left": "15", "isLinked": true}, "box_shadow_box_shadow": {"horizontal": 0, "vertical": 0, "blur": 4, "spread": 0, "color": "rgba(0,0,0,0.5)"}}, "elements": [{"id": "1bff814b", "settings": {"rating_icon": {"value": "fas fa-star", "library": "fa-solid"}, "icon_size": {"unit": "px", "size": 13, "sizes": []}, "icon_size_tablet": {"unit": "px", "size": 12, "sizes": []}, "icon_gap": {"unit": "px", "size": 5, "sizes": []}}, "elements": [], "isInner": false, "widgetType": "rating", "elType": "widget"}], "isInner": true, "elType": "container"}, {"id": "4e7811bb", "settings": {"content_width": "full", "width": {"unit": "%", "size": 100, "sizes": []}, "flex_direction": "row", "flex_gap": {"column": "0", "row": "0", "isLinked": true, "unit": "px", "size": 0}, "border_radius": {"unit": "px", "top": "15", "right": "15", "bottom": "15", "left": "15", "isLinked": true}, "box_shadow_box_shadow": {"horizontal": 0, "vertical": 0, "blur": 4, "spread": 0, "color": "rgba(0,0,0,0.5)"}}, "elements": [{"id": "1799ad8", "settings": {"editor": "<p>Ho iniziato il 7 gennaio, dopo le feste. sono passati 10 giorni e ho gi\u00e0 perso 4kg. le ho provate tutte coi nutrizionisti ma a saperlo prima non avrei speso tutti quei soldi in visite inutili: Ci sarei andata a cena con quei soldi.</p>", "typography_typography": "custom", "typography_font_family": "Arial", "typography_font_size": {"unit": "px", "size": 14, "sizes": []}, "typography_font_size_tablet": {"unit": "px", "size": 13, "sizes": []}, "typography_font_weight": "400", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "a2ce26f"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "c0c0518"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}], "isInner": true, "elType": "container"}], "isInner": true, "elType": "container"}], "isInner": false, "elType": "container"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "4b94c1db", "settings": {"height": "min-height", "margin": {"top": "0", "left": 0, "unit": "px", "right": 0, "bottom": "0", "isLinked": true}, "padding": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "__globals__": {"background_color": "", "background_color_b": ""}, "custom_height": {"size": "", "unit": "px", "sizes": []}, "column_position": "stretch", "background_color_b": "", "custom_height_mobile": {"size": "", "unit": "vw", "sizes": []}, "custom_height_tablet": {"size": "", "unit": "vw", "sizes": []}, "background_background": "gradient"}, "elements": [{"id": "30832683", "settings": {"_column_size": 100, "_inline_size": null, "content_position": "center", "align": "center", "space_between_widgets": -15, "space_between_widgets_mobile": -10}, "elements": [{"id": "7340e22f", "settings": {"margin": {"top": "0", "left": 0, "unit": "px", "right": 0, "bottom": "0", "isLinked": false}, "background_background": "classic"}, "elements": [{"id": "a8a2d6f", "settings": {"_column_size": 100, "_inline_size": null, "background_background": "gradient", "background_color": "#410000", "border_radius": {"unit": "px", "top": "10", "right": "10", "bottom": "10", "left": "10", "isLinked": true}, "padding": {"unit": "px", "top": "10", "right": "25", "bottom": "010", "left": "25", "isLinked": false}, "__globals__": {"background_color": ""}, "background_color_b": "#C90000", "background_color_b_stop": {"unit": "%", "size": 94, "sizes": []}, "background_color_b_stop_mobile": {"unit": "%", "size": 46}, "background_gradient_angle": {"unit": "deg", "size": 199, "sizes": []}}, "elements": [{"id": "1ff63282", "settings": {"eael_fancy_text_prefix": "Offerta valida fino ", "eael_fancy_text_strings": [{"eael_fancy_text_strings_text_field": "alle 23:59 di oggi", "_id": "c9eac89"}], "eael_fancy_text_suffix": " ", "eael_fancy_text_delay": 3500, "typography_typography": "custom", "typography_font_size_mobile": {"unit": "rem", "size": 0.9, "sizes": []}, "eael_fancy_text_strings_typography_typography": "custom", "eael_fancy_text_strings_typography_font_size_mobile": {"unit": "rem", "size": 1, "sizes": []}, "eael_fancy_text_strings_typography_font_weight": "800", "eael_fancy_text_strings_color": "#FF0000", "typography_font_family": "Montserrat", "typography_font_weight": "700", "eael_fancy_text_prefix_color": "#FFFFFF", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "d9a8496"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "eee68ba"}]}, "elements": [], "isInner": false, "widgetType": "eael-fancy-text", "elType": "widget"}], "isInner": true, "elType": "column"}], "isInner": true, "elType": "section"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "26164b6a", "settings": {"height": "min-height", "margin": {"top": "0", "left": 0, "unit": "px", "right": 0, "bottom": "0", "isLinked": true}, "padding": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "20", "isLinked": false}, "__globals__": {"background_color": "", "background_color_b": ""}, "custom_height": {"size": "", "unit": "px", "sizes": []}, "column_position": "stretch", "background_color_b": "", "custom_height_mobile": {"size": "", "unit": "vw", "sizes": []}, "custom_height_tablet": {"size": "", "unit": "vw", "sizes": []}, "background_background": "gradient", "structure": "20", "padding_mobile": {"unit": "px", "top": "20", "right": "16", "bottom": "20", "left": "16", "isLinked": false}}, "elements": [{"id": "6630a211", "settings": {"_column_size": 50, "_inline_size": null, "content_position": "center", "align": "center", "space_between_widgets": -15, "space_between_widgets_mobile": -10}, "elements": [{"id": "42862e0", "settings": {"align": "center", "editor": "<p>Ordinando Ora Ricevi:</p>", "_margin": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "_animation": "none", "__globals__": {"text_color": "", "_border_color": ""}, "align_mobile": "center", "typography_font_size": {"size": 20, "unit": "px", "sizes": []}, "typography_typography": "custom", "_background_background": "classic", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_line_height": {"size": "", "unit": "em", "sizes": []}, "typography_font_size_mobile": {"size": 22, "unit": "px", "sizes": []}, "typography_line_height_mobile": {"size": 1, "unit": "em", "sizes": []}, "typography_font_size_tablet": {"unit": "px", "size": 18, "sizes": []}, "text_color": "#000000", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "0048ed7"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "468bedf"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}, {"id": "1b98de31", "settings": {"image": {"id": 51101, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/SEGNAPOSTO-1-33.jpg", "alt": "", "source": "library", "size": ""}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}, {"id": "128f4ca3", "settings": {"eael_pricing_table_title": "Solo per Oggi - 50%", "eael_pricing_table_sub_title": "A tagline here.", "eael_pricing_table_price": "199", "eael_pricing_table_onsale": "yes", "eael_pricing_table_onsale_price": "99", "eael_pricing_table_price_cur": "\u20ac", "eael_pricing_table_price_cur_placement": "right", "eael_pricing_table_price_period": "", "eael_pricing_table_period_separator": "", "eael_pricing_table_items": [{"eael_pricing_table_item": "1 Double Fryer XXL\u2122\u200b", "_id": "b3200dd", "eael_pricing_item_tooltip_content": "I'm a awesome tooltip!!", "pricing_item_tooltip_animation_duration": 300, "eael_pricing_table_list_icon_new": {"value": "fas fa-check-circle", "library": "fa-solid"}}, {"eael_pricing_table_item": "2 Cestello di cottura in silicone", "_id": "pkg_1", "eael_pricing_item_tooltip_content": "I'm a awesome tooltip!!", "pricing_item_tooltip_animation_duration": 300, "eael_pricing_table_list_icon_new": {"value": "fas fa-check-circle", "library": "fa-solid"}}, {"eael_pricing_table_item": "Manuale di istruzioni e guida rapida all'uso", "_id": "pkg_4", "eael_pricing_item_tooltip_content": "I'm a awesome tooltip!!", "pricing_item_tooltip_animation_duration": 300, "eael_pricing_table_list_icon_new": {"value": "fas fa-check-circle", "library": "fa-solid"}}, {"eael_pricing_table_item": "Garanzia 2 anni", "eael_pricing_item_tooltip_content": "I'm a awesome tooltip!!", "pricing_item_tooltip_animation_duration": 300, "eael_pricing_table_list_icon_new": {"value": "fas fa-check-circle", "library": "fa-solid"}, "_id": "0aff00b"}], "eael_pricing_table_button_icon_new": {"value": "fas fa-pencil-alt", "library": "fa-solid"}, "eael_pricing_table_button_icon_indent": {"unit": "px", "size": 10, "sizes": []}, "eael_pricing_table_btn": "Inserisci i tuoi dati", "eael_pricing_table_btn_link": {"url": "#PUR", "is_external": "", "nofollow": "", "custom_attributes": ""}, "eael_pricing_table_featured": "yes", "eael_pricing_table_featured_styles": "ribbon-4", "eael_pricing_table_featured_tag_text": "Sconto Attivo", "eael_pricing_table_ribbon_alignment": "left", "eael_pricing_table_border_border": "none", "eael_pricing_table_border_width": {"unit": "px", "top": "2", "right": "2", "bottom": "2", "left": "2", "isLinked": true}, "eael_pricing_table_border_color": "#AC0000", "eael_pricing_table_border_radius": {"unit": "px", "size": 15, "sizes": []}, "eael_pricing_table_title_color": "#C50000", "eael_pricing_table_title_typography_typography": "custom", "eael_pricing_table_title_typography_font_family": "Poppins", "eael_pricing_table_title_typography_font_size": {"unit": "px", "size": 18, "sizes": []}, "eael_pricing_table_title_typography_font_weight": "700", "eael_pricing_table_devider_show": "", "eael_pricing_table_pricing_onsale_color": "#DD0000", "eael_pricing_table_price_tag_onsale_typography_typography": "custom", "eael_pricing_table_price_tag_onsale_typography_font_family": "Inter", "eael_pricing_table_price_tag_onsale_typography_font_size": {"unit": "px", "size": 18, "sizes": []}, "eael_pricing_table_price_tag_onsale_typography_font_weight": "600", "eael_pricing_table_original_price_currency_typography_typography": "custom", "eael_pricing_table_original_price_currency_typography_font_family": "Inter", "eael_pricing_table_original_price_currency_typography_font_size": {"unit": "px", "size": 18, "sizes": []}, "eael_pricing_table_pricing_color": "#00990F", "eael_pricing_table_price_tag_typography_typography": "custom", "eael_pricing_table_price_tag_typography_font_size": {"unit": "px", "size": 50, "sizes": []}, "eael_pricing_table_price_tag_typography_font_weight": "800", "eael_pricing_table_list_item_align": "left", "eael_pricing_table_list_item_typography_typography": "custom", "eael_pricing_table_list_item_typography_font_family": "Montserrat", "eael_pricing_table_list_item_typography_font_size": {"unit": "px", "size": 15, "sizes": []}, "eael_pricing_table_list_item_typography_font_weight": "500", "eael_pricing_table_tooltip_border_width": {"unit": "px", "top": "2", "right": "2", "bottom": "2", "left": "2", "isLinked": true}, "eael_pricing_table_content_button_alignment_tablet": "center", "eael_pricing_table_content_button_alignment_mobile": "center", "eael_pricing_table_btn_padding_tablet": {"unit": "px", "top": "20", "right": "20", "bottom": "20", "left": "20", "isLinked": true}, "eael_pricing_table_btn_icon_size": {"unit": "px", "size": 18, "sizes": []}, "eael_pricing_table_btn_typography_typography": "custom", "eael_pricing_table_btn_typography_font_family": "Montserrat", "eael_pricing_table_btn_typography_font_size_mobile": {"unit": "px", "size": 16, "sizes": []}, "eael_pricing_table_btn_typography_font_weight": "700", "eael_is_button_gradient_background": "yes", "eael_pricing_table_btn_normal_text_color": "#000000", "eael_pricing_table_btn_normal_bg_gradient_background": "gradient", "eael_pricing_table_btn_normal_bg_gradient_color": "#FFD800", "eael_pricing_table_btn_normal_bg_gradient_color_b": "#FFA300", "eael_pricing_table_btn_normal_bg_gradient_gradient_angle_tablet": {"unit": "deg", "size": ""}, "eael_pricing_table_btn_border_radius": {"unit": "px", "size": 15, "sizes": []}, "eael_pricing_table_btn_hover_text_color": "#FFFFFF", "eael_pricing_table_btn_hover_bg_gradient_background": "gradient", "eael_pricing_table_btn_hover_bg_gradient_color": "#0052B6", "eael_pricing_table_btn_hover_bg_gradient_color_b": "#0470F4", "eael_pricing_table_btn_hover_border_color": "#0470F4", "_css_classes": "Pricing-Table", "_background_background": "classic", "_background_color": "#FFFFFF", "_border_border": "dashed", "_border_width_mobile": {"unit": "px", "top": "2", "right": "2", "bottom": "2", "left": "2", "isLinked": true}, "_border_color": "#009E35", "_border_radius": {"unit": "px", "top": "15", "right": "15", "bottom": "15", "left": "15", "isLinked": true}, "_border_radius_mobile": {"unit": "px", "top": "15", "right": "15", "bottom": "15", "left": "15", "isLinked": true}, "eael_pricing_table_button_show": "", "eael_pricing_table_content_alignment_mobile": "center"}, "elements": [], "isInner": false, "widgetType": "eael-pricing-table", "elType": "widget"}], "isInner": false, "elType": "column"}, {"id": "6a7d88e4", "settings": {"_column_size": 50, "_inline_size": null, "content_position": "center", "align": "center", "space_between_widgets": -15, "space_between_widgets_mobile": -10}, "elements": [{"id": "2779210", "settings": {"image": {"id": 51101, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/SEGNAPOSTO-1-33.jpg", "alt": "", "source": "library", "size": ""}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "3f8ea17a", "settings": {"margin": {"top": "", "left": 0, "unit": "px", "right": 0, "bottom": "", "isLinked": true}, "padding": {"top": "25", "left": "0", "unit": "px", "right": "0", "bottom": "25", "isLinked": false}, "margin_mobile": {"top": "0", "left": 0, "unit": "px", "right": 0, "bottom": "0", "isLinked": true}, "margin_tablet": {"top": "50", "left": 0, "unit": "px", "right": 0, "bottom": "50", "isLinked": true}, "background_color": "#FFFFFF", "background_background": "classic", "padding_mobile": {"unit": "px", "top": "20", "right": "16", "bottom": "20", "left": "16", "isLinked": false}}, "elements": [{"id": "5b524cc4", "settings": {"_column_size": 100, "_inline_size": null, "space_between_widgets": 5, "space_between_widgets_mobile": 15}, "elements": [{"id": "20bbae9", "settings": {"link": {"url": "#PUR", "nofollow": "", "is_external": "", "custom_attributes": ""}, "text": "ORDINA ADESSO", "align": "center", "_margin": {"top": "10", "left": "0", "unit": "px", "right": "0", "bottom": "10", "isLinked": false}, "_css_classes": "pulsante-cta", "border_width": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "text_padding": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "border_border": "solid", "border_radius": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": true}, "_margin_tablet": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "_padding_tablet": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "background_color": "#B3EB00", "button_text_color": "#000000", "text_padding_mobile": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "text_padding_tablet": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "border_radius_mobile": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": false}, "border_radius_tablet": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": true}, "typography_font_size": {"size": 1.1, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_weight": "700", "typography_text_transform": "uppercase", "typography_font_size_mobile": {"size": 18, "unit": "px", "sizes": []}, "typography_font_size_tablet": {"size": 1.1, "unit": "rem", "sizes": []}, "button_box_shadow_box_shadow": {"blur": 3, "color": "#A8A8A8", "spread": 0, "vertical": 5, "horizontal": 0}, "typography_font_family": "Montserrat", "button_background_hover_color": "#44C700", "__globals__": {"button_background_hover_color": ""}, "hover_color": "#FFFFFF", "button_hover_box_shadow_box_shadow_type": "yes", "button_hover_box_shadow_box_shadow": {"horizontal": 0, "vertical": 6, "blur": 10, "spread": 0, "color": "rgba(0,0,0,0.5)"}, "_margin_mobile": {"unit": "px", "top": "20", "right": "0", "bottom": "20", "left": "0", "isLinked": false}, "button_box_shadow_box_shadow_type": "yes", "_animation": "rubberBand", "_animation_mobile": "fadeInUp"}, "elements": [], "isInner": false, "widgetType": "button", "elType": "widget"}, {"id": "38a27ae6", "settings": {"image": {"id": "51049", "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/recensioni-1-1.png"}, "width": {"unit": "%", "size": 10, "sizes": []}, "width_tablet": {"unit": "%", "size": 30, "sizes": []}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}, {"id": "7c16a764", "settings": {"align": "center", "title": "Media Recensioni Verificate: 4,6", "_margin": {"top": "0", "left": "10", "unit": "px", "right": "10", "bottom": "0", "isLinked": false}, "_margin_mobile": {"top": "-13", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_font_size": {"size": 0.9, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_font_size_mobile": {"size": 0.9, "unit": "rem", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing_mobile": {"size": 0, "unit": "px", "sizes": []}, "typography_line_height": {"unit": "px", "size": 13, "sizes": []}, "__globals__": {"title_color": ""}, "title_color": "#000000", "_padding_mobile": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": false}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "c20952e"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "c83b002"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "5190ca56", "settings": {"icon_list": [{"text": "Garanzia 2 Anni", "selected_icon": {"value": "fas fa-shipping-fast", "library": "fa-solid"}, "_id": "5f96ce0"}, {"text": "<span style=\"word-spacing: 3.84px;\">Pagamento Sicuro alla Consegna</span>", "selected_icon": {"value": "fas fa-money-bill", "library": "fa-solid"}, "_id": "99ef956"}, {"text": "<span style=\"word-spacing: 3.84px;\">Reso gratuito</span>", "selected_icon": {"value": "fas fa-money-bill", "library": "fa-solid"}, "_id": "09f00a6"}], "space_between": {"unit": "px", "size": 20, "sizes": []}, "icon_color": "#EC7E00", "icon_size": {"unit": "px", "size": 21, "sizes": []}, "text_color": "#000000", "icon_typography_typography": "custom", "icon_typography_font_weight": "700", "icon_typography_font_size": {"unit": "rem", "size": 1, "sizes": []}, "icon_typography_font_size_tablet": {"unit": "rem", "size": "", "sizes": []}, "icon_typography_font_size_mobile": {"unit": "rem", "size": 1, "sizes": []}, "icon_align": "center", "icon_self_align": "center", "text_indent": {"unit": "px", "size": 7, "sizes": []}, "icon_typography_line_height": {"unit": "em", "size": 1.3, "sizes": []}, "icon_typography_letter_spacing": {"unit": "px", "size": 0, "sizes": []}, "icon_typography_word_spacing": {"unit": "em", "size": 0.2, "sizes": []}, "_margin": {"unit": "px", "top": "15", "right": "0", "bottom": "20", "left": "0", "isLinked": false}, "icon_size_mobile": {"unit": "px", "size": 15, "sizes": []}, "view": "inline", "space_between_mobile": {"unit": "px", "size": 12, "sizes": []}, "icon_typography_font_family": "Arial"}, "elements": [], "isInner": false, "widgetType": "icon-list", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "30a77547", "settings": {"background_background": "gradient", "__globals__": {"background_color": ""}, "background_color": "#00218D", "layout": "full_width", "custom_height_mobile": {"unit": "px", "size": 0, "sizes": []}, "background_color_b": "#411C00", "background_color_b_stop_mobile": {"unit": "%", "size": ""}, "background_gradient_angle": {"unit": "deg", "size": 90, "sizes": []}, "background_gradient_angle_mobile": {"unit": "deg", "size": 90}}, "elements": [{"id": "78c73e19", "settings": {"_column_size": 100, "_inline_size": null}, "elements": [{"id": "7c87c2be", "settings": {"deensimc_repeater_text_main": [{"deensimc_repeater_text": "\u2728 Elettrodomestici scontati fino al 70%", "_id": "428f64f"}, {"deensimc_repeater_text": "\u2728 Sconto Attivo", "_id": "0f28785"}, {"deensimc_repeater_text": " \ud83d\udcb8 Pagamento in Contrassegno", "_id": "db2fa59"}], "deensimc_marquee_vertical_orientation": "", "deensimc_marquee_speed": 5, "deensimc_scroll_text_typography_typography": "custom", "deensimc_scroll_text_typography_font_family": "Montserrat", "deensimc_scroll_text_typography_font_size": {"unit": "px", "size": 14, "sizes": []}, "deensimc_scroll_text_typography_font_weight": "500", "deensimc_scroll_text_typography_letter_spacing": {"unit": "px", "size": 0, "sizes": []}, "deensimc_scroll_text_color": "#FFFFFF", "deensimc_icon_color": "#FFFFFF", "deensimc_icon_size": {"unit": "px", "size": 0, "sizes": []}, "deensimc_icon_spacing_from_content": {"unit": "px", "size": 29, "sizes": []}, "deensimc_marquee_gap": {"column": "35", "row": "5", "isLinked": false, "unit": "px"}, "deensimc_text_wrap_tablet": "", "deensimc_text_wrap_mobile": "", "deensimc_icon_adjust_vertical_position": {"unit": "px", "size": 0, "sizes": []}, "deensimc_icon_adjust_vertical_position_tablet": {"unit": "px", "size": "", "sizes": []}, "deensimc_icon_adjust_vertical_position_mobile": {"unit": "px", "size": "", "sizes": []}}, "elements": [], "isInner": false, "widgetType": "deensimc-smooth-text", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "32ff8743", "settings": {"margin": {"top": "25", "left": 0, "unit": "px", "right": 0, "bottom": "25", "isLinked": true}, "structure": "20", "__globals__": {"background_color": ""}, "background_background": "classic"}, "elements": [{"id": "32ec4aed", "settings": {"_column_size": 50, "margin": {"top": "5", "left": "5", "unit": "px", "right": "5", "bottom": "5", "isLinked": true}, "animation": "none", "_inline_size": null, "border_color": "#06A434", "border_border": "none", "animation_mobile": "none", "_inline_size_tablet": 50}, "elements": [{"id": "6743dd34", "settings": {"image": {"id": 51101, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/SEGNAPOSTO-1-33.jpg", "alt": "", "source": "library", "size": ""}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}], "isInner": false, "elType": "column"}, {"id": "a6960cc", "settings": {"_column_size": 50, "margin": {"top": "5", "left": "5", "unit": "px", "right": "5", "bottom": "5", "isLinked": true}, "animation": "none", "_inline_size": null, "border_color": "#06A434", "border_border": "none", "animation_mobile": "none", "_inline_size_tablet": 50}, "elements": [{"id": "3b508422", "settings": {"align": "center", "title": "Cucina per tutta la famiglia grazie al doppio cestello asimmetrico", "__globals__": {"title_color": "", "_background_color": "globals/colors?id=93223b6"}, "header_size": "h4", "title_color": "#000000", "_css_classes": "titolo-vantaggio-01", "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_font_size_mobile": {"size": 1.5, "unit": "rem", "sizes": []}, "typography_font_size": {"size": 1.4, "unit": "rem", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_letter_spacing_mobile": {"size": 0, "unit": "px", "sizes": []}, "_margin": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": false}, "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "f86ebb9"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "6de72c1"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "53678a5a", "settings": {"align": "left", "editor": "<p>Con il doppio cestello asimmetrico puoi preparare <b>due piatti diversi nello stesso momento</b>, in modo semplice e senza complicazioni. Da una parte cuoci la carne o il pesce, dall\u2019altra le verdure o le patatine, ognuno con tempi e temperature giuste, <b>senza mescolare sapori e odori</b>. \u00c8 la soluzione ideale quando cucini per tutta la famiglia: risparmi tempo, consumi meno energia e porti tutto in tavola caldo e pronto insieme, proprio come piace a casa.</p>", "text_color": "#000000", "__globals__": {"text_color": ""}, "_css_classes": "descrizione-vantaggio-01", "typography_font_size": {"size": 1.2, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "500", "typography_font_size_mobile": {"size": 1, "unit": "rem", "sizes": []}, "align_tablet": "left", "align_mobile": "left", "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_letter_spacing_mobile": {"unit": "px", "size": 0, "sizes": []}, "_margin": {"top": "0", "left": "10", "unit": "px", "right": "10", "bottom": "0", "isLinked": false}, "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_letter_spacing_tablet": {"unit": "px", "size": 0, "sizes": []}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "4d13a61"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "7010ad1"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "8bda672", "settings": {"margin": {"top": "25", "left": 0, "unit": "px", "right": 0, "bottom": "25", "isLinked": true}, "structure": "20", "__globals__": {"background_color": ""}, "background_background": "classic", "reverse_order_tablet": "reverse-tablet", "reverse_order_mobile": "reverse-mobile"}, "elements": [{"id": "582ada76", "settings": {"_column_size": 50, "margin": {"top": "5", "left": "5", "unit": "px", "right": "5", "bottom": "5", "isLinked": true}, "animation": "none", "_inline_size": null, "border_color": "#06A434", "border_border": "none", "animation_mobile": "none", "_inline_size_tablet": 50}, "elements": [{"id": "634d9d49", "settings": {"align": "center", "title": "8 Programmi di Cucina", "__globals__": {"title_color": "", "_background_color": "globals/colors?id=93223b6"}, "header_size": "h4", "title_color": "#000000", "_css_classes": "titolo-vantaggio-02", "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_font_size_mobile": {"size": 1.5, "unit": "rem", "sizes": []}, "typography_font_size": {"size": 1.4, "unit": "rem", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_letter_spacing_mobile": {"size": 0, "unit": "px", "sizes": []}, "_margin": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": false}, "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "75763f1"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "bb68544"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "4868f5ba", "settings": {"align": "left", "editor": "<p>Con gli 8 programmi di cucina preimpostati preparare i pasti \u00e8 ancora pi\u00f9 facile e senza pensieri. Basta selezionare il programma giusto e la friggitrice imposta automaticamente <strong data-start=\"205\" data-end=\"235\">tempo e temperatura ideali</strong>, garantendo una cottura uniforme e saporita. \u00c8 perfetta per chi vuole cucinare bene ogni giorno senza complicarsi la vita, con risultati affidabili anche se non si \u00e8 esperti in cucina.</p>", "text_color": "#000000", "__globals__": {"text_color": ""}, "_css_classes": "descrizione-vantaggio-02", "typography_font_size": {"size": 1.2, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "500", "typography_font_size_mobile": {"size": 1, "unit": "rem", "sizes": []}, "align_tablet": "left", "align_mobile": "left", "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_letter_spacing_mobile": {"unit": "px", "size": 0, "sizes": []}, "_margin": {"top": "0", "left": "10", "unit": "px", "right": "10", "bottom": "0", "isLinked": false}, "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_letter_spacing_tablet": {"unit": "px", "size": 0, "sizes": []}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "aed93ec"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "c8d17c1"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}], "isInner": false, "elType": "column"}, {"id": "3800a8e0", "settings": {"_column_size": 50, "margin": {"top": "5", "left": "5", "unit": "px", "right": "5", "bottom": "5", "isLinked": true}, "animation": "none", "_inline_size": null, "border_color": "#06A434", "border_border": "none", "animation_mobile": "none", "_inline_size_tablet": 50}, "elements": [{"id": "4d85409", "settings": {"image": {"id": 51101, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/SEGNAPOSTO-1-33.jpg", "alt": "", "source": "library", "size": ""}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "1ebf2f3", "settings": {"flex_direction": "column"}, "elements": [{"id": "6bf61db4", "settings": {"link": {"url": "#PUR", "nofollow": "", "is_external": "", "custom_attributes": ""}, "text": "ORDINA ADESSO", "align": "center", "_margin": {"top": "10", "left": "0", "unit": "px", "right": "0", "bottom": "10", "isLinked": false}, "_css_classes": "pulsante-cta", "border_width": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "text_padding": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "border_border": "solid", "border_radius": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": true}, "_margin_tablet": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "_padding_tablet": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": true}, "background_color": "#B3EB00", "button_text_color": "#000000", "text_padding_mobile": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "text_padding_tablet": {"top": "15", "left": "25", "unit": "px", "right": "25", "bottom": "15", "isLinked": false}, "border_radius_mobile": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": false}, "border_radius_tablet": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": true}, "typography_font_size": {"size": 1.1, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_weight": "700", "typography_text_transform": "uppercase", "typography_font_size_mobile": {"size": 18, "unit": "px", "sizes": []}, "typography_font_size_tablet": {"size": 1.1, "unit": "rem", "sizes": []}, "button_box_shadow_box_shadow": {"blur": 3, "color": "#A8A8A8", "spread": 0, "vertical": 5, "horizontal": 0}, "typography_font_family": "Montserrat", "button_background_hover_color": "#44C700", "__globals__": {"button_background_hover_color": ""}, "hover_color": "#FFFFFF", "button_hover_box_shadow_box_shadow_type": "yes", "button_hover_box_shadow_box_shadow": {"horizontal": 0, "vertical": 6, "blur": 10, "spread": 0, "color": "rgba(0,0,0,0.5)"}, "_margin_mobile": {"unit": "px", "top": "20", "right": "0", "bottom": "20", "left": "0", "isLinked": false}, "button_box_shadow_box_shadow_type": "yes", "_animation": "rubberBand", "_animation_mobile": "tada"}, "elements": [], "isInner": false, "widgetType": "button", "elType": "widget"}], "isInner": false, "elType": "container"}, {"id": "55896023", "settings": {"margin": {"top": "25", "left": 0, "unit": "px", "right": 0, "bottom": "25", "isLinked": true}, "structure": "20", "__globals__": {"background_color": ""}, "background_background": "classic"}, "elements": [{"id": "3c8b6e1f", "settings": {"_column_size": 50, "margin": {"top": "5", "left": "5", "unit": "px", "right": "5", "bottom": "5", "isLinked": true}, "animation": "none", "_inline_size": null, "border_color": "#06A434", "border_border": "none", "animation_mobile": "none", "_inline_size_tablet": 50}, "elements": [{"id": "519fbf9", "settings": {"image": {"id": 51101, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/SEGNAPOSTO-1-33.jpg", "alt": "", "source": "library", "size": ""}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}], "isInner": false, "elType": "column"}, {"id": "74622c1d", "settings": {"_column_size": 50, "margin": {"top": "5", "left": "5", "unit": "px", "right": "5", "bottom": "5", "isLinked": true}, "animation": "none", "_inline_size": null, "border_color": "#06A434", "border_border": "none", "animation_mobile": "none", "_inline_size_tablet": 50}, "elements": [{"id": "671d56a1", "settings": {"align": "center", "title": "1,2 Kg di pollo arrosto + 800gr di patatine", "__globals__": {"title_color": "", "_background_color": "globals/colors?id=93223b6"}, "header_size": "h4", "title_color": "#000000", "_css_classes": "titolo-vantaggio-03", "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "700", "typography_font_size_mobile": {"size": 1.5, "unit": "rem", "sizes": []}, "typography_font_size": {"size": 1.4, "unit": "rem", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_letter_spacing_mobile": {"size": 0, "unit": "px", "sizes": []}, "_margin": {"top": "10", "left": "10", "unit": "px", "right": "10", "bottom": "10", "isLinked": false}, "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "cde4445"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "12e4511"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "fd224f9", "settings": {"align": "left", "editor": "<p>Con la grande capacit\u00e0 e il doppio cestello puoi preparare un pollo arrosto da 1,2 kg e fino a 800 grammi di patatine nello stesso momento, senza fatica. Il pollo risulta ben cotto e succoso, mentre le patatine diventano dorate e croccanti, pronte da servire insieme. \u00c8 la soluzione ideale per il pranzo della domenica o quando hai ospiti: tutto pronto in una sola cottura, senza accendere il forno e senza sporcare troppe stoviglie.</p>", "text_color": "#000000", "__globals__": {"text_color": ""}, "_css_classes": "descrizione-vantaggio-03", "typography_font_size": {"size": 1.2, "unit": "rem", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "500", "typography_font_size_mobile": {"size": 1, "unit": "rem", "sizes": []}, "align_tablet": "left", "align_mobile": "left", "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_letter_spacing": {"size": 0, "unit": "px", "sizes": []}, "typography_letter_spacing_mobile": {"unit": "px", "size": 0, "sizes": []}, "_margin": {"top": "0", "left": "10", "unit": "px", "right": "10", "bottom": "0", "isLinked": false}, "_margin_mobile": {"top": "0", "left": "0", "unit": "px", "right": "0", "bottom": "0", "isLinked": false}, "typography_letter_spacing_tablet": {"unit": "px", "size": 0, "sizes": []}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "35b5dde"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "947290e"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "4673ee71", "settings": {"margin": {"top": "25", "left": 0, "unit": "px", "right": 0, "bottom": "25", "isLinked": true}, "__globals__": {"background_color": ""}, "background_background": "classic"}, "elements": [{"id": "1f6e03f", "settings": {"_column_size": 100, "_inline_size": null, "background_background": "classic", "background_color": "#FFFFFF", "border_radius": {"unit": "px", "top": "10", "right": "10", "bottom": "10", "left": "10", "isLinked": true}, "__globals__": {"background_color": ""}}, "elements": [{"id": "4e843ba2", "settings": {"margin": {"top": "0", "left": 0, "unit": "px", "right": 0, "bottom": "20", "isLinked": false}}, "elements": [{"id": "6264d586", "settings": {"_column_size": 100, "_inline_size": null, "background_background": "gradient", "background_color": "#410000", "border_radius": {"unit": "px", "top": "10", "right": "10", "bottom": "10", "left": "10", "isLinked": true}, "padding": {"unit": "px", "top": "10", "right": "25", "bottom": "010", "left": "25", "isLinked": false}, "__globals__": {"background_color": ""}, "background_color_b": "#C90000", "background_color_b_stop": {"unit": "%", "size": 94, "sizes": []}, "background_color_b_stop_mobile": {"unit": "%", "size": 46}, "background_gradient_angle": {"unit": "deg", "size": 199, "sizes": []}}, "elements": [{"id": "4eb941f6", "settings": {"eael_fancy_text_prefix": "Offerta valida fino ", "eael_fancy_text_strings": [{"eael_fancy_text_strings_text_field": "alle 23:59 di oggi", "_id": "c9eac89"}], "eael_fancy_text_suffix": " ", "eael_fancy_text_delay": 3500, "typography_typography": "custom", "typography_font_size_mobile": {"unit": "rem", "size": 0.9, "sizes": []}, "eael_fancy_text_strings_typography_typography": "custom", "eael_fancy_text_strings_typography_font_size_mobile": {"unit": "rem", "size": 1, "sizes": []}, "eael_fancy_text_strings_typography_font_weight": "800", "eael_fancy_text_strings_color": "#FF0000", "typography_font_family": "Montserrat", "typography_font_weight": "700", "eael_fancy_text_prefix_color": "#FFFFFF", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "c8b220d"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "81150e6"}]}, "elements": [], "isInner": false, "widgetType": "eael-fancy-text", "elType": "widget"}], "isInner": true, "elType": "column"}], "isInner": true, "elType": "section"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "65bae84d", "settings": {"margin": {"top": "", "left": 0, "unit": "px", "right": 0, "bottom": "", "isLinked": true}, "padding": {"top": "25", "left": "0", "unit": "px", "right": "0", "bottom": "25", "isLinked": false}, "margin_mobile": {"top": "", "left": 0, "unit": "px", "right": 0, "bottom": "", "isLinked": true}, "margin_tablet": {"top": "50", "left": 0, "unit": "px", "right": 0, "bottom": "50", "isLinked": true}, "background_color": "#E2F5FF", "background_background": "gradient", "padding_mobile": {"unit": "px", "top": "20", "right": "16", "bottom": "20", "left": "16", "isLinked": false}, "background_color_b": "#FFCFDB", "background_color_b_stop": {"unit": "%", "size": 73, "sizes": []}, "background_color_b_stop_mobile": {"unit": "%", "size": 63}, "background_gradient_angle": {"unit": "deg", "size": 45, "sizes": []}, "layout": "full_width"}, "elements": [{"id": "37f57e4f", "settings": {"_column_size": 100, "_inline_size": null, "space_between_widgets": 5, "margin_tablet": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "margin": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "padding": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "padding_mobile": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}}, "elements": [{"id": "48af0502", "settings": {"image": {"id": "51057", "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/recensioni-google-scaled-1-1-1-1-1.png"}, "width": {"unit": "%", "size": 10, "sizes": []}, "width_tablet": {"unit": "%", "size": 30, "sizes": []}, "width_mobile": {"unit": "%", "size": 50, "sizes": []}, "_margin_mobile": {"unit": "px", "top": "20", "right": "0", "bottom": "0", "left": "0", "isLinked": false}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}, {"id": "3cb52b51", "settings": {"deensimc_repeater_testimonial_main": [{"deensimc_testimonial_name": "Angela", "_id": "22d9537", "deensimc_testimonial_content": "Cucino ogni giorno per marito e nipoti e finalmente riesco a risparmiare tempo. Mi piace poter fare due cose diverse nello stesso momento, senza sporcare troppe pentole. Il risultato \u00e8 buono e croccante, anche senza olio. Un ottimo aiuto in cucina, la consiglio.", "deensimc_testimonial_image": {"id": 51116, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/23-2-1-1.jpg"}, "deensimc_testimonial_title": "57 anni, Roma", "deensimc_testimonial_show_rating": "yes", "deensimc_testimonial_rating_in_text": ""}, {"deensimc_testimonial_name": "Mario", "_id": "5a05889", "deensimc_testimonial_content": "All\u2019inizio ero scettico, poi mi sono ricreduto. \u00c8 solida, non complicata e fa bene il suo lavoro. Con il doppio cestello preparo carne e patate insieme e mangiamo tutti alla stessa ora. Consuma meno del forno e il cibo \u00e8 gustoso. Per me \u00e8 promossa.", "deensimc_testimonial_image": {"id": 51117, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/21-1-1.jpg"}, "deensimc_testimonial_title": "53 Anni, Padova", "deensimc_testimonial_show_rating": "yes", "deensimc_testimonial_rating_num": 4.5}, {"deensimc_testimonial_name": "Maria", "deensimc_testimonial_content": "Non sono molto pratica di elettrodomestici moderni, ma questa friggitrice \u00e8 davvero facile da usare. Il doppio cestello \u00e8 comodissimo: preparo il secondo e il contorno insieme senza stress. I cibi vengono ben cotti e leggeri. La uso spesso e la pulizia \u00e8 semplice, che per me \u00e8 fondamentale.", "deensimc_testimonial_image": {"id": 51118, "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/47-2-1-1.jpg"}, "deensimc_testimonial_title": "63 Anni, Casalinga", "deensimc_testimonial_show_rating": "yes", "deensimc_testimonial_rating_num": 4, "_id": "bf0b331"}], "deensimc_tesimonial_excerpt_length": "", "deensimc_tesimonial_excerpt_title": "", "deensimc_tesimonial_excerpt_title_less": "", "deensimc_marquee_vertical_orientation": "", "deensimc_testimonial_widget_box_width": {"unit": "px", "size": 330, "sizes": []}, "deensimc_tesimonial_contents_background_overlay": "#FFFFFF", "deensimc_tesimonial_content_typography_typography": "custom", "deensimc_tesimonial_content_typography_font_family": "Helvetica", "deensimc_tesimonial_content_typography_font_size": {"unit": "px", "size": 14, "sizes": []}, "deensimc_tesimonial_content_typography_line_height": {"unit": "px", "size": 1, "sizes": []}, "deensimc_tesimonial_icon_size": {"unit": "px", "size": "", "sizes": []}, "deensimc_tesimonial_image_spacing": {"unit": "px", "size": 0, "sizes": []}, "deensimc_tesimonial_image_resulation": {"unit": "px", "size": 63, "sizes": []}, "deensimc_tesimonial_name_typography_typography": "custom", "deensimc_tesimonial_name_typography_font_family": "Helvetica", "deensimc_tesimonial_name_typography_font_weight": "500", "deensimc_tesimonial_name_spacing": {"unit": "px", "size": "", "sizes": []}, "deensimc_tesimonial_title_typography_typography": "custom", "deensimc_tesimonial_title_typography_font_family": "Helvetica", "deensimc_tesimonial_title_typography_font_size": {"unit": "px", "size": 13, "sizes": []}, "deensimc_tesimonial_title_typography_font_style": "italic", "deensimc_marquee_edge_shadow_color": "#E3F7DF", "_margin_mobile": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}, "_padding_mobile": {"unit": "px", "top": "0", "right": "0", "bottom": "0", "left": "0", "isLinked": true}}, "elements": [], "isInner": false, "widgetType": "deensimc-testimonial", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "576e6758", "settings": {"background_color": "#FFFFFF", "background_background": "classic"}, "elements": [{"id": "57f5991a", "settings": {"_column_size": 100, "_inline_size": null}, "elements": [{"id": "6491b8d4", "settings": {"anchor": "PUR"}, "elements": [], "isInner": false, "widgetType": "menu-anchor", "elType": "widget"}, {"id": "1355c318", "settings": {"__globals__": {"button_bg_color_normal": "", "eael_contact_form_border_color": "globals/colors?id=918ca22"}, "input_width": {"size": 100, "unit": "%", "sizes": []}, "button_align": "center", "label_spacing": {"size": 0, "unit": "px", "sizes": []}, "field_text_color": "#000000", "text_color_label": "#000000", "title_text_color": "#000000", "contact_form_list": "53485", "input_width_mobile": {"size": "", "unit": "%", "sizes": []}, "input_width_tablet": {"size": "", "unit": "%", "sizes": []}, "button_border_radius": {"top": "12", "left": "12", "unit": "px", "right": "12", "bottom": "12", "isLinked": true}, "button_padding_mobile": {"top": "20", "left": "20", "unit": "px", "right": "20", "bottom": "20", "isLinked": true}, "description_text_color": "#000000", "error_alert_text_color": "#C20000", "text_color_placeholder": "#D3D3D3", "button_text_color_normal": "#FFFFFF", "eael_contact_form_padding": {"top": "30", "left": "30", "unit": "px", "right": "30", "bottom": "20", "isLinked": false}, "field_typography_font_size": {"size": 23, "unit": "px", "sizes": []}, "typography_label_font_size": {"size": 21, "unit": "px", "sizes": []}, "button_typography_font_size": {"size": 26, "unit": "px", "sizes": []}, "eael_contact_form_alignment": "center", "field_typography_typography": "personalizat", "title_typography_typography": "custom", "typography_label_typography": "custom", "button_box_shadow_box_shadow": {"blur": 6, "color": "rgba(0,0,0.5)", "spread": 0, "vertical": 5, "horizontal": 0}, "button_typography_typography": "custom", "field_typography_font_family": "Arial", "field_typography_font_weight": "500", "typography_label_font_weight": "600", "button_typography_font_weight": "700", "eael_contact_form_border_width": {"top": "3", "left": "3", "unit": "px", "right": "3", "bottom": "3", "isLinked": true}, "eael_contact_form_border_border": "dashed", "typography_placeholder_font_size": {"size": 20, "unit": "px", "sizes": []}, "button_box_shadow_box_shadow_type": "yes", "description_typography_typography": "personalizat", "field_typography_font_size_mobile": {"size": 19, "unit": "px", "sizes": []}, "title_typography_font_size_mobile": {"size": "", "unit": "em", "sizes": []}, "typography_label_font_size_mobile": {"size": 18, "unit": "px", "sizes": []}, "typography_placeholder_typography": "personalizat", "button_typography_font_size_mobile": {"size": 22, "unit": "px", "sizes": []}, "description_typography_font_family": "Roboto", "description_typography_font_weight": "500", "eael_contact_form_alignment_mobile": "center", "typography_placeholder_font_family": "Roboto", "typography_placeholder_font_weight": "500", "eael_contact_form_border_width_mobile": {"top": "3", "left": "3", "unit": "px", "right": "3", "bottom": "3", "isLinked": true}, "description_typography_font_size_mobile": {"size": 1, "unit": "rem", "sizes": []}, "eael_contact_form_background_background": "classic", "eael_contact_form_box_shadow_box_shadow": {"blur": 0, "color": "rgba(0,0,0.5)", "spread": 0, "vertical": 0, "horizontal": 0}, "typography_placeholder_font_size_mobile": {"size": 15, "unit": "px", "sizes": []}, "contact_form_after_submit_feedback_color": "#45B400", "eael_contact_form_box_shadow_box_shadow_type": "yes", "eael_contact_form_border_color": "#000000", "typography_label_font_family": "Montserrat", "button_bg_color_normal": "#00A553", "eael_contact_form_background_color": "#FAFFE2", "eael_contact_form_background_image": {"url": "", "id": "", "size": "", "alt": "", "source": "library"}, "title_typography_font_size": {"unit": "px", "size": 18, "sizes": []}, "eael_contact_form_max_width": {"unit": "%", "size": 100, "sizes": []}, "eael_contact_form_max_width_tablet": {"unit": "%", "size": 100, "sizes": []}, "eael_contact_form_max_width_mobile": {"unit": "%", "size": 100, "sizes": []}, "eael_contact_form_padding_tablet": {"unit": "px", "top": "20", "right": "20", "bottom": "20", "left": "20", "isLinked": true}, "button_typography_font_family": "Helvetica", "button_width": {"unit": "px", "size": 560, "sizes": []}, "button_width_tablet": {"unit": "px", "size": 560, "sizes": []}, "button_width_mobile": {"unit": "px", "size": 280, "sizes": []}}, "elements": [], "isInner": false, "widgetType": "eael-contact-form-7", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "625c026f", "settings": {"margin": {"top": "", "left": 0, "unit": "px", "right": 0, "bottom": "", "isLinked": true}, "padding": {"top": "25", "left": "0", "unit": "px", "right": "0", "bottom": "25", "isLinked": false}, "margin_mobile": {"top": "0", "left": 0, "unit": "px", "right": 0, "bottom": "0", "isLinked": true}, "margin_tablet": {"top": "50", "left": 0, "unit": "px", "right": 0, "bottom": "50", "isLinked": true}, "background_color": "#FFFFFF", "background_background": "classic", "padding_mobile": {"unit": "px", "top": "20", "right": "16", "bottom": "20", "left": "16", "isLinked": false}}, "elements": [{"id": "74e50856", "settings": {"_column_size": 100, "_inline_size": null, "space_between_widgets": 5, "border_radius": {"unit": "px", "top": "15", "right": "15", "bottom": "15", "left": "15", "isLinked": true}, "box_shadow_box_shadow_type": "yes", "margin_mobile": {"unit": "px", "top": "10", "right": "10", "bottom": "10", "left": "10", "isLinked": true}}, "elements": [{"id": "7dbfdd8e", "settings": {"align": "center", "title": "Domande Frequenti", "__globals__": {"title_color": ""}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "\u00eendr\u0103zne\u021b", "typography_text_transform": "none", "typography_font_size_mobile": {"size": 1.3, "unit": "rem", "sizes": []}, "typography_font_size_tablet": {"size": "", "unit": "rem", "sizes": []}, "typography_font_size": {"unit": "px", "size": 25, "sizes": []}, "title_color": "#0470f4", "_margin": {"unit": "px", "top": "30", "right": "30", "bottom": "30", "left": "30", "isLinked": true}, "_margin_mobile": {"unit": "px", "top": "16", "right": "16", "bottom": "16", "left": "16", "isLinked": true}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "b4a091a"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "545e612"}]}, "elements": [], "isInner": false, "widgetType": "heading", "elType": "widget"}, {"id": "717a6549", "settings": {"tabs": [{"tab_title": "\u00c8 difficile da usare per chi non \u00e8 tecnologico?", "tab_content": "<p>Assolutamente no. Basta selezionare la modalit\u00e0 desiderata sullo schermo touch, scegliere l\u2019alimento e avviare la cottura. Chef Maker\u2122 regola tutto in automatico.</p>", "_id": "faq_1"}, {"tab_title": "Che tipo di cibi posso preparare?", "tab_content": "<p>Di tutto: carne, pesce, verdure, dolci, pane e perfino piatti gratinati. I 40 programmi automatici coprono ogni esigenza.</p>", "_id": "e66ec51"}, {"tab_title": "Serve aggiungere olio?", "tab_content": "<p>No, o solo pochissime gocce. La cottura ad aria calda e il sistema di nebulizzazione mantengono i cibi croccanti senza grassi in eccesso.</p>", "_id": "ac46438"}, {"tab_title": "\u00c8 facile da pulire dopo l'uso?", "tab_content": "<p>Molto facile. Il cestello \u00e8 antiaderente e le parti mobili vanno in lavastoviglie.</p>", "_id": "faq_3"}, {"tab_title": "Quanto spazio occupa in cucina?", "tab_content": "<p>Sostituisce forno e friggitrice, \u00e8 compatto e sta comodamente sul piano di lavoro.</p>", "_id": "faq_4"}, {"tab_title": "Posso controllarla da telefono?", "tab_content": "<p>S\u00ec. Tramite l\u2019app integrata puoi monitorare tempi, temperatura e stato di cottura anche da remoto.</p>", "_id": "cba8811"}, {"tab_title": "Come funziona il reso?", "tab_content": "<p>Se non sei soddisfatto, puoi restituirlo entro 30\u202fgiorni senza costi aggiuntivi.</p>", "_id": "0981a93"}, {"tab_title": "Quanto impiega l\u2019ordine ad arrivare?", "tab_content": "<p>Spedizione in 24\u201148\u202fore tramite corriere espresso.</p>", "_id": "121f969"}], "__globals__": {"title_color": "", "content_color": "", "tab_active_color": ""}, "title_color": "#0470f4", "_css_classes": "domande-faq", "content_color": "#444444", "tab_active_color": "#3BBB00", "content_background_color": "#FFFFFF", "content_typography_typography": "custom", "content_typography_font_family": "Montserrat", "content_typography_font_weight": "500", "content_typography_font_size_mobile": {"size": 1, "unit": "rem", "sizes": []}, "border_width": {"unit": "px", "top": "", "right": "", "bottom": "", "left": "", "isLinked": true}, "title_typography_typography": "custom", "title_typography_font_family": "Montserrat", "title_typography_font_weight": "700", "title_background": "#F7F9FF", "title_typography_font_size": {"unit": "px", "size": 16, "sizes": []}, "content_typography_font_size": {"unit": "px", "size": 15, "sizes": []}, "tab_content": "<p>Risposta 04</p>"}, "elements": [], "isInner": false, "widgetType": "accordion", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "d878085", "settings": {"background_color": "#FFFFFF", "background_background": "classic"}, "elements": [{"id": "51b9a65", "settings": {"_column_size": 100, "_inline_size": null}, "elements": [{"id": "46c1fcb9", "settings": {"anchor": "PUR2"}, "elements": [], "isInner": false, "widgetType": "menu-anchor", "elType": "widget"}, {"id": "376e3f8a", "settings": {"__globals__": {"button_bg_color_normal": "", "eael_contact_form_border_color": "globals/colors?id=918ca22"}, "input_width": {"size": 100, "unit": "%", "sizes": []}, "button_align": "center", "label_spacing": {"size": 0, "unit": "px", "sizes": []}, "field_text_color": "#000000", "text_color_label": "#000000", "title_text_color": "#000000", "contact_form_list": "53485", "input_width_mobile": {"size": "", "unit": "%", "sizes": []}, "input_width_tablet": {"size": "", "unit": "%", "sizes": []}, "button_border_radius": {"top": "12", "left": "12", "unit": "px", "right": "12", "bottom": "12", "isLinked": true}, "button_padding_mobile": {"top": "20", "left": "20", "unit": "px", "right": "20", "bottom": "20", "isLinked": true}, "description_text_color": "#000000", "error_alert_text_color": "#C20000", "text_color_placeholder": "#D3D3D3", "button_text_color_normal": "#FFFFFF", "eael_contact_form_padding": {"top": "30", "left": "30", "unit": "px", "right": "30", "bottom": "20", "isLinked": false}, "field_typography_font_size": {"size": 23, "unit": "px", "sizes": []}, "typography_label_font_size": {"size": 21, "unit": "px", "sizes": []}, "button_typography_font_size": {"size": 26, "unit": "px", "sizes": []}, "eael_contact_form_alignment": "center", "field_typography_typography": "personalizat", "title_typography_typography": "custom", "typography_label_typography": "custom", "button_box_shadow_box_shadow": {"blur": 6, "color": "rgba(0,0,0.5)", "spread": 0, "vertical": 5, "horizontal": 0}, "button_typography_typography": "custom", "field_typography_font_family": "Arial", "field_typography_font_weight": "500", "typography_label_font_weight": "600", "button_typography_font_weight": "700", "eael_contact_form_border_width": {"top": "3", "left": "3", "unit": "px", "right": "3", "bottom": "3", "isLinked": true}, "eael_contact_form_border_border": "dashed", "typography_placeholder_font_size": {"size": 20, "unit": "px", "sizes": []}, "button_box_shadow_box_shadow_type": "yes", "description_typography_typography": "personalizat", "field_typography_font_size_mobile": {"size": 19, "unit": "px", "sizes": []}, "title_typography_font_size_mobile": {"size": "", "unit": "em", "sizes": []}, "typography_label_font_size_mobile": {"size": 18, "unit": "px", "sizes": []}, "typography_placeholder_typography": "personalizat", "button_typography_font_size_mobile": {"size": 22, "unit": "px", "sizes": []}, "description_typography_font_family": "Roboto", "description_typography_font_weight": "500", "eael_contact_form_alignment_mobile": "center", "typography_placeholder_font_family": "Roboto", "typography_placeholder_font_weight": "500", "eael_contact_form_border_width_mobile": {"top": "3", "left": "3", "unit": "px", "right": "3", "bottom": "3", "isLinked": true}, "description_typography_font_size_mobile": {"size": 1, "unit": "rem", "sizes": []}, "eael_contact_form_background_background": "classic", "eael_contact_form_box_shadow_box_shadow": {"blur": 0, "color": "rgba(0,0,0.5)", "spread": 0, "vertical": 0, "horizontal": 0}, "typography_placeholder_font_size_mobile": {"size": 15, "unit": "px", "sizes": []}, "contact_form_after_submit_feedback_color": "#45B400", "eael_contact_form_box_shadow_box_shadow_type": "yes", "eael_contact_form_border_color": "#000000", "typography_label_font_family": "Montserrat", "button_bg_color_normal": "#00A553", "eael_contact_form_background_color": "#FAFFE2", "eael_contact_form_background_image": {"url": "", "id": "", "size": "", "alt": "", "source": "library"}, "title_typography_font_size": {"unit": "px", "size": 18, "sizes": []}, "eael_contact_form_max_width": {"unit": "%", "size": 100, "sizes": []}, "eael_contact_form_max_width_tablet": {"unit": "%", "size": 100, "sizes": []}, "eael_contact_form_max_width_mobile": {"unit": "%", "size": 100, "sizes": []}, "eael_contact_form_padding_tablet": {"unit": "px", "top": "20", "right": "20", "bottom": "20", "left": "20", "isLinked": true}, "button_typography_font_family": "Helvetica", "button_width": {"unit": "px", "size": 560, "sizes": []}, "button_width_tablet": {"unit": "px", "size": 560, "sizes": []}, "button_width_mobile": {"unit": "px", "size": 280, "sizes": []}}, "elements": [], "isInner": false, "widgetType": "eael-contact-form-7", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "6394fa2a", "settings": {"background_background": "gradient", "__globals__": {"background_color": ""}, "background_color": "#00218D", "layout": "full_width", "custom_height_mobile": {"unit": "px", "size": 0, "sizes": []}, "background_color_b": "#007CE4", "background_color_b_stop_mobile": {"unit": "%", "size": ""}, "background_gradient_angle": {"unit": "deg", "size": 90, "sizes": []}, "background_gradient_angle_mobile": {"unit": "deg", "size": 90}}, "elements": [{"id": "723fc539", "settings": {"_column_size": 100, "_inline_size": null}, "elements": [{"id": "29d892d1", "settings": {"deensimc_repeater_text_main": [{"deensimc_repeater_text": "\u2728 Elettrodomestici scontati fino al 70%", "_id": "428f64f"}, {"deensimc_repeater_text": "\u2728 Sconto Attivo", "_id": "0f28785"}, {"deensimc_repeater_text": " \ud83d\udcb8 Pagamento in Contrassegno", "_id": "db2fa59"}], "deensimc_marquee_vertical_orientation": "", "deensimc_marquee_speed": 5, "deensimc_scroll_text_typography_typography": "custom", "deensimc_scroll_text_typography_font_family": "Montserrat", "deensimc_scroll_text_typography_font_size": {"unit": "px", "size": 14, "sizes": []}, "deensimc_scroll_text_typography_font_weight": "500", "deensimc_scroll_text_typography_letter_spacing": {"unit": "px", "size": 0, "sizes": []}, "deensimc_scroll_text_color": "#FFFFFF", "deensimc_icon_color": "#FFFFFF", "deensimc_icon_size": {"unit": "px", "size": 0, "sizes": []}, "deensimc_icon_spacing_from_content": {"unit": "px", "size": 29, "sizes": []}, "deensimc_marquee_gap": {"column": "35", "row": "5", "isLinked": false, "unit": "px"}, "deensimc_text_wrap_tablet": "", "deensimc_text_wrap_mobile": "", "deensimc_icon_adjust_vertical_position": {"unit": "px", "size": 0, "sizes": []}, "deensimc_icon_adjust_vertical_position_tablet": {"unit": "px", "size": "", "sizes": []}, "deensimc_icon_adjust_vertical_position_mobile": {"unit": "px", "size": "", "sizes": []}}, "elements": [], "isInner": false, "widgetType": "deensimc-smooth-text", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}, {"id": "1f35191c", "settings": {"background_color": "#FFFFFF", "background_background": "classic", "background_overlay_opacity": {"size": 0.39, "unit": "px", "sizes": []}, "background_overlay_background": "classic"}, "elements": [{"id": "c3acc7f", "settings": {"_column_size": 100, "_inline_size": null}, "elements": [{"id": "402e960f", "settings": {"image": {"id": "51048", "url": "https://shopgadgetitalia.com/wp-content/uploads/2026/04/home4you-logo-1-1-1.png"}, "width": {"size": 20, "unit": "%", "sizes": []}, "width_mobile": {"size": 30, "unit": "%", "sizes": []}}, "elements": [], "isInner": false, "widgetType": "image", "elType": "widget"}, {"id": "f6c2f8a", "settings": {"align": "center", "editor": "<p><span style=\"color: #808080;\"><span style=\"font-weight: bolder;\">\u00a9\u00a0</span><strong>Copyright 2025 CucinaFutura\u00a0</strong></span></p>\n<p><span style=\"color: #808080;\"><strong>Tutti i Diritti Riservati</strong></span></p>\n<p><strong style=\"color: #ffffff;\"><a href=\"https://shopgolditalia.com/disclaimer-2/\">Disclaimer</a>\u00a0 \u00a0 \u00a0 <a href=\"https://shopgolditalia.com/privacy-policy-2/\">\u00a0Privacy Policy</a>\u00a0 \u00a0 \u00a0 \u00a0<a href=\"https://shopgolditalia.com/cookie-policy-2/\">Cookie Policy</a></strong></p>", "typography_font_size": {"size": 11, "unit": "px", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "400", "typography_font_size_mobile": {"size": 13, "unit": "px", "sizes": []}, "text_color": "#000000", "_css_classes": "copy", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "7e07937"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "8ea0934"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}, {"id": "6cbe85e8", "settings": {"align": "center", "editor": "<p><span style=\"color: #808080;\">Via Giuseppe Garibaldi 42</span></p><p><span style=\"color: #808080;\">20121 Milano MI</span></p><p><span style=\"color: #808080;\">Orari di Apertura: Lun-Ven 09:00 - 18:30</span></p><p><span style=\"color: #808080;\">Contattaci: <a style=\"color: #808080;\" href=\"mailto:assistenza@cucinafutura.it\">assistenza@cucinafutura.it</a></span></p>", "text_color": "#B3B3B3", "typography_font_size": {"size": 13, "unit": "px", "sizes": []}, "typography_typography": "custom", "typography_font_family": "Montserrat", "typography_font_weight": "500", "typography_font_size_mobile": {"size": 12, "unit": "px", "sizes": []}, "_css_classes": "indirizzo-footer", "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "2f9e6dc"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "ebd2646"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}, {"id": "188bc299", "settings": {"align": "center", "editor": "<p>This site is not a part of the Facebook website or Facebook Inc.</p><p>Additionally, this site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of FACEBOOK, Inc.</p><p>l nostro sito web agisce esclusivamente come affiliato e si concentra sulla promozione dei prodotti tramite campagne pubblicitarie. Non ci assumiamo alcuna responsabilit\u00e0 per la spedizione, la qualit\u00e0 o qualsiasi altra questione riguardante i prodotti venduti tramite link di affiliazione. Ti preghiamo di notare che le immagini utilizzate a scopo illustrativo potrebbero non corrispondere alla reale immagine del prodotto acquistato. Ti invitiamo a contattare il servizio assistenza clienti dopo aver inserito i dati nel modulo per chiedere\u00a0 qualsiasi domanda o informazione sul prodotto prima di confermare l\u2019ordine. Ti informiamo inoltre che i prodotti in omaggio proposti sul sito possono essere soggetti a disponibilit\u00e0 limitata, senza alcuna garanzia di disponibilit\u00e0 da parte del\u00a0 venditore che spedisce il prodotto. Ricorda che, qualora sorgessero problemi relativi alle spedizioni o alla qualit\u00e0 dei prodotti, la responsabilit\u00e0 ricade direttamente sull\u2019azienda fornitrice.\u00a0</p>", "typography_font_size": {"size": 11, "unit": "px", "sizes": []}, "typography_typography": "personalizat", "typography_font_family": "Arial", "typography_font_weight": "300", "typography_font_size_mobile": {"size": 11, "unit": "px", "sizes": []}, "eael_vto_writing_gradient_color_repeater": [{"eael_vto_writing_gradient_color": "#7C62FF", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 50, "sizes": []}, "_id": "17b6beb"}, {"eael_vto_writing_gradient_color": "#FF6464", "eael_vto_writing_gradient_color_location": {"unit": "%", "size": 90, "sizes": []}, "_id": "d3628d5"}]}, "elements": [], "isInner": false, "widgetType": "text-editor", "elType": "widget"}], "isInner": false, "elType": "column"}], "isInner": false, "elType": "section"}], "page_settings": {"eael_ext_toc_title": "Table of Contents"}, "version": "0.4", "title": "Template-final", "type": "page"}
+</script>
+<script>
+// Load template from embedded JSON
+try {
+  const tplEl = document.getElementById('tpl-data');
+  if (tplEl) window.EMBEDDED_TEMPLATE = JSON.parse(tplEl.textContent);
+} catch(e) { console.error('Template load error:', e); }
+</script>
+</body>
+</html>
