@@ -171,7 +171,7 @@ const state = {
   dark: false,
   step: 1,
   maxStep: 1,
-  apiKey: localStorage.getItem('lpg_apikey') || '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',
+  apiKey: localStorage.getItem('lpg_apikey') || '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',
   form: { product:'', price:'', originalPrice:'', country:'it', brief:'' },
   research: '',
   copy: null,
@@ -190,6 +190,7 @@ const state = {
   showImportResearch: false,
   importedResearch: '',
   sessionRestored: false,
+  apiKeySaved: false,
 };
 
 // ── API ───────────────────────────────────────────────────────────
@@ -523,8 +524,20 @@ function renderSettings() {
     ),
     el('div',{style:{marginBottom:'14px'}},
       lbl('Anthropic API Key'),
-      inp('sk-ant-...', state.apiKey, e => { state.apiKey=e.target.value; localStorage.setItem('lpg_apikey',state.apiKey); }, 'password'),
-      el('div',{class:'info-note'},'Ottienila su console.anthropic.com → API Keys')
+      el('div',{style:{display:'flex',gap:'8px'}},
+        inp('sk-ant-api03-...', state.apiKey, e => { state.apiKey=e.target.value; }, 'password'),
+        el('button',{
+          class:'btn-g',
+          style:{whiteSpace:'nowrap',flexShrink:'0'},
+          onclick:()=>{
+            localStorage.setItem('lpg_apikey', state.apiKey);
+            state.apiKeySaved=true;
+            render();
+            setTimeout(()=>{ state.apiKeySaved=false; render(); }, 2000);
+          }
+        }, state.apiKeySaved ? '✓ Salvata' : '💾 Salva')
+      ),
+      el('div',{class:'info-note'}, state.apiKey ? '✓ Chiave presente — clicca Salva dopo ogni modifica' : '⚠ Inserisci la tua API key da console.anthropic.com → API Keys')
     ),
     el('div',{class:'g3',style:{marginBottom:'12px'}},
       el('div',{},lbl('URL sito WordPress'),inp('https://tuosito.it',state.wpConfig.url,e=>{state.wpConfig.url=e.target.value;},'url')),
@@ -826,6 +839,7 @@ const EMBEDDED_TEMPLATE_PLACEHOLDER = '__TEMPLATE_PLACEHOLDER__';
 
 // Load session
 loadSession();
+if (!state.apiKey) state.showSettings = true;
 render();
 </script>
 
