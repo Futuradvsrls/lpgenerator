@@ -93,9 +93,62 @@ body.dark{--bg:#0D0F1C;--surface:#13162A;--card:#181C32;--card-inner:#111428;--b
   .frow button,.frow a{width:100%;justify-content:center}
   .step-lbl{display:none}
 }
+
+/* Login screen */
+#login-screen{position:fixed;inset:0;background:#0D0F1C;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:system-ui,sans-serif}
+.login-box{background:#181C32;border:1px solid #252A45;border-radius:16px;padding:40px;width:100%;max-width:360px;text-align:center}
+.login-logo{width:10px;height:10px;border-radius:50%;background:#5B72F5;display:inline-block;margin-bottom:20px}
+.login-title{font-size:22px;font-weight:700;color:#E0E4FF;margin-bottom:6px}
+.login-sub{font-size:13px;color:#7880A8;margin-bottom:28px}
+.login-input{background:#0A0C1A;border:1.5px solid #252A45;border-radius:8px;color:#E0E4FF;font-size:15px;font-family:inherit;padding:12px 16px;width:100%;outline:none;text-align:center;letter-spacing:2px;margin-bottom:14px;transition:border-color .2s}
+.login-input:focus{border-color:#5B72F5}
+.login-btn{background:linear-gradient(135deg,#5B72F5,#7C5CF6);color:#fff;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit;transition:opacity .2s}
+.login-btn:hover{opacity:.88}
+.login-error{color:#EF4444;font-size:13px;margin-top:10px;min-height:18px}
 </style>
 </head>
 <body class="light">
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo"></div>
+    <div class="login-title">LP Generator Pro</div>
+    <div class="login-sub">Affiliate COD Tool — Accesso riservato</div>
+    <input class="login-input" type="password" id="pwd-input" placeholder="••••••••" autocomplete="off"/>
+    <button class="login-btn" onclick="checkPassword()">Accedi</button>
+    <div class="login-error" id="pwd-error"></div>
+  </div>
+</div>
+
+<script>
+const HASH = 'a57170600cbbc87c16827e39ed6b5b003184a65288e9791eb6be87872735bdf6'; // SHA-256
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkPassword() {
+  const val = document.getElementById('pwd-input').value;
+  const hash = await sha256(val);
+  if (hash === HASH) {
+    sessionStorage.setItem('lpg_auth','1');
+    document.getElementById('login-screen').remove();
+  } else {
+    document.getElementById('pwd-error').textContent = 'Password errata — riprova';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+if (sessionStorage.getItem('lpg_auth') === '1') {
+  document.getElementById('login-screen').remove();
+}
+</script>
+
 <div id="app" style="max-width:900px;margin:0 auto;padding:1.25rem 1rem"></div>
 
 <script>
@@ -117,14 +170,14 @@ const state = {
   dark: false,
   step: 1,
   maxStep: 1,
-  apiKey: localStorage.getItem('lpg_apikey') || '',
+  apiKey: localStorage.getItem('lpg_apikey') || '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',
   form: { product:'', price:'', originalPrice:'', country:'it', brief:'' },
   research: '',
   copy: null,
   loading: false,
   loadingMsg: '',
   error: '',
-  wpConfig: JSON.parse(localStorage.getItem('lpg_wp') || '{"url":"","username":"","appPassword":""}'),
+  wpConfig: JSON.parse(localStorage.getItem('lpg_wp') || '{"url":"https://www.shopgadgetitalia.com","username":"giuliocapuozzo@yahoo.com","appPassword":"vAcI QU10 vPY2 jtHI cS06 72aV"}'),
   showSettings: false,
   wpTestResult: null,
   wpTesting: false,
