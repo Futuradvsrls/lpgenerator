@@ -156,6 +156,7 @@ if (sessionStorage.getItem('lpg_auth') === '1') {
 const COUNTRIES = [["it","🇮🇹 Italia"],["es","🇪🇸 Spagna"],["fr","🇫🇷 Francia"],["de","🇩🇪 Germania"],["pt","🇵🇹 Portogallo"],["ro","🇷🇴 Romania"]];
 const MODEL = "claude-sonnet-4-20250514";
 const MODEL_RESEARCH = "claude-haiku-4-5-20251001";
+const SITES = [{"name": "shopgadgetitalia.com", "url": "https://www.shopgadgetitalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "jK8H CAgX CG34 n2Qy doSL p0AQ"}, {"name": "risparmintelligenti.com", "url": "https://www.risparmintelligenti.com", "username": "giuliocapuozzo@yahoo.com", "password": "1d9v aaDs 4FHp ZQEe Mdzd xICn"}, {"name": "biologonutrizionistadigiorgio.com", "url": "https://www.biologonutrizionistadigiorgio.com", "username": "giuliocapuozzo@yahoo.com", "password": "0c2m cfrZ BXVm pXLZ lHlY yMa2"}, {"name": "shopsilveritalia.com", "url": "https://www.shopsilveritalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "ae2m LV9l SWyK EztT OcZV UZG3"}, {"name": "shopgolditalia.com", "url": "https://www.shopgolditalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "fzDF sh5C gD44 ep6j lT8i vZ7p"}, {"name": "miglioriofferteprime.com", "url": "https://www.miglioriofferteprime.com", "username": "giuliocapuozzo@yahoo.com", "password": "5le6 tnBt 1iGW RS0u kgZR ti3e"}];
 
 const SYS_RESEARCH = `Sei un esperto ricercatore di mercato per campagne di affiliazione COD italiane ed europee. Analizzi prodotti di consumo per un target over 50 a bassa scolarizzazione. Cerchi tensioni di mercato reali: cosa vuole il cliente ma teme, quali caratteristiche premium esistono nei modelli top ma non sono mai tutte insieme in un prodotto consumer. Rispondi sempre in italiano, in modo strutturato, concreto e pratico.`;
 
@@ -179,6 +180,7 @@ const state = {
   loadingMsg: '',
   error: '',
   wpConfig: JSON.parse(localStorage.getItem('lpg_wp') || '{"url":"https://www.shopgadgetitalia.com","username":"giuliocapuozzo@yahoo.com","appPassword":"jK8H CAgX CG34 n2Qy doSL p0AQ"}'),
+  selectedSite: 0,
   showSettings: false,
   wpTestResult: null,
   wpTesting: false,
@@ -539,14 +541,38 @@ function renderSettings() {
       ),
       el('div',{class:'info-note'}, state.apiKey ? '✓ Chiave presente — clicca Salva dopo ogni modifica' : '⚠ Inserisci la tua API key da console.anthropic.com → API Keys')
     ),
-    el('div',{class:'g3',style:{marginBottom:'12px'}},
-      el('div',{},lbl('URL sito WordPress'),inp('https://tuosito.it',state.wpConfig.url,e=>{state.wpConfig.url=e.target.value;},'url')),
-      el('div',{},lbl('Username admin WP'),inp('admin',state.wpConfig.username,e=>{state.wpConfig.username=e.target.value;})),
-      el('div',{},lbl('Application Password'),inp('xxxx xxxx xxxx...',state.wpConfig.appPassword,e=>{state.wpConfig.appPassword=e.target.value;},'password')),
+    el('div',{style:{marginBottom:'14px'}},
+      lbl('Sito WordPress attivo'),
+      el('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px'}},
+        ...SITES.map((site, i) => {
+          const isActive = state.selectedSite === i;
+          return el('button',{
+            onclick: () => {
+              state.selectedSite = i;
+              state.wpConfig = { url: site.url, username: site.username, appPassword: site.password };
+              localStorage.setItem('lpg_wp', JSON.stringify(state.wpConfig));
+              state.wpTestResult = null;
+              render();
+            },
+            style: {
+              padding: '10px 8px',
+              borderRadius: '8px',
+              border: isActive ? '2px solid var(--green)' : '1.5px solid var(--border)',
+              background: isActive ? 'var(--green-bg)' : 'transparent',
+              color: isActive ? 'var(--green)' : 'var(--text-sub)',
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: isActive ? '700' : '400',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              transition: 'all .2s',
+            }
+          }, (isActive ? '✓ ' : '') + site.name);
+        })
+      )
     ),
     el('div',{class:'frow',style:{marginBottom:state.wpTestResult?'10px':'0'}},
-      btn('btn-p','Salva',saveWP,!wpReady),
-      btn('btn-s',state.wpTesting?'⏳ Test...':'⚡ Testa Connessione',testWP,state.wpTesting||!wpReady),
+      btn('btn-s',state.wpTesting?'⏳ Test...':'⚡ Testa Connessione',testWP,!state.wpConfig.url),
     ),
     state.wpTestResult ? el('div',{class:state.wpTestResult.ok?'success-box':'error-box',style:{marginTop:'10px'}},state.wpTestResult.msg) : el('div',{}),
   ],'card-accent');
@@ -728,12 +754,15 @@ function renderStep4() {
   const wpReady = state.wpConfig.url && state.wpConfig.username && state.wpConfig.appPassword;
   return el('div',{},
     card([
-      el('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}},
+      el('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px',flexWrap:'wrap'}},
         el('div',{style:{fontSize:'14px',fontWeight:'600'}},'Template Elementor'),
-        el('span',{class:'tag-g'},'✓ LP-Final integrato')
+        el('span',{class:'tag-g'},'✓ LP-Final integrato'),
+        el('span',{class:'tag-b'},'🌐 ' + (SITES[state.selectedSite]?.name || 'Nessun sito selezionato'))
       ),
       el('p',{style:{fontSize:'13px',color:'var(--text-sub)',lineHeight:'1.65'}},
-        'Il template base è integrato nel tool — ogni LP usa sempre il file corretto.'
+        'Template integrato. Sito attivo: ',
+        el('strong',{},SITES[state.selectedSite]?.name || '—'),
+        '. Cambia sito nelle impostazioni ⚙.'
       )
     ]),
     state.copy ? el('div',{},
