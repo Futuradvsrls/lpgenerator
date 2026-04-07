@@ -500,20 +500,49 @@ async function generateAds() {
   const c = state.copy;
   const prompt = `Prodotto: ${c.brandName}
 Headline: ${c.headline}
-Bullets: ${(c.bullets||[]).join(' | ')}
 Prezzo: ${c.pricing?.prezzoScontato}€ (era ${c.pricing?.prezzoOriginale}€)
-Bundle: ${(c.pricing?.items||[]).join(', ')}
-Paure principali over 50: ${(c.faq||[]).slice(0,3).map(f=>f.domanda).join(' | ')}
-Recensione 1: ${(c.recensioni||[])[0]?.testo||''}
-Recensione 2: ${(c.recensioni||[])[1]?.testo||''}
+Bullets: ${(c.bullets||[]).join(' | ')}
+Vantaggi: ${(c.vantaggi||[]).map(v=>v.titolo+': '+v.testo.replace(/<[^>]+>/g,'')).join(' | ')}
+Paure over 50: ${(c.faq||[]).slice(0,4).map(f=>f.domanda).join(' | ')}
+Recensioni: ${(c.recensioni||[]).map(r=>r.testo).join(' | ')}
 
-Scrivi esattamente questo, senza titoli aggiuntivi, senza numerazioni, solo i testi separati da una riga vuota:
+ISTRUZIONI:
 
-— 3 testi per VIDEO CON AVATAR (persona che parla in camera). Ognuno inizia con un hook di 5-8 parole fortissimo, poi il testo parlato in prima persona. Ognuno affronta un angle diverso estratto dalle paure/tensioni del prodotto. Tono: reale, colloquiale, come se stesse parlando a un amico. Lunghezza: 60-90 parole. Nessun titolo, nessuna etichetta, solo il testo.
+Prima analizza il prodotto e decidi la logica degli angles:
+- Se è un PRODOTTO STRUMENTO (idropulitrice, cesoia, gazebo, ecc.): usa 6 casi d'uso reali come angles. Il caso d'uso è l'angle. Dentro ogni testo il caso d'uso apre il testo, poi entra il prodotto, poi le specs come prova.
+- Se è un PRODOTTO SICUREZZA/CONTROLLO (videocamera, sensori, gps): usa paure e desideri emotivi come angles.
+- Se è un PRODOTTO RISPARMIO (centralina, pannelli): usa il vantaggio economico concreto con numeri reali.
+- Se è un PRODOTTO SALUTE/BENESSERE: usa qualità della vita e limiti fisici risolti.
 
-— 3 testi per VOICEOVER (voce fuori campo su video del prodotto). Ognuno inizia con un hook, poi descrive il prodotto e risolve una paura specifica. Tono indicato tra parentesi alla fine: (autorevole) o (empatico) o (urgenza). Lunghezza: 50-70 parole. Nessun titolo, nessuna etichetta, solo il testo.
+Per prodotti strumento: rileva i 6 casi d'uso più importanti e scrivili in cima al file come lista numerata prima dei testi.
 
-— 3 prompt per generare immagini ads con GPT Image o Nanobanana. Ogni prompt è strutturato in 3 blocchi separati da virgola: [contesto e sfondo] [descrizione prodotto come appare nell'immagine] [testo in overlay: titolo breve + subtitle + 3 bullet + eventuali bollini qualità pertinenti al prodotto]. Nessun titolo, nessuna etichetta, solo il prompt.`;
+STRUTTURA AVATAR (6 testi, uno per ogni caso d'uso o angle):
+- Titolo: "Avatar [numero] — [caso d'uso/angle]"
+- Hook: frase secca e diretta che descrive una situazione reale e riconoscibile. Mai domande. Mai "mi ha cambiato la vita". Mai superlativi vuoti. Una situazione concreta che il target riconosce come sua.
+- Introduzione prodotto con nome
+- Sviluppo del caso d'uso con specs tecniche tradotte in vantaggi concreti
+- CTA: "Paghi solo quando arriva il corriere" o "Trovi il link qui sotto, paghi alla consegna"
+- Lunghezza: 80-100 parole
+- Riga vuota tra un testo e l'altro
+
+STRUTTURA VOICEOVER (3 testi, i 3 casi d'uso/angles più forti):
+- Titolo: "Voiceover [numero] — [vantaggio principale]"
+- Prima frase: vantaggio principale per il cliente, chiaro e immediato
+- Seconda frase: introduzione del prodotto con nome e cosa fa
+- Sviluppo: specs tecniche che supportano quel vantaggio + vantaggi secondari
+- CTA: "Consegna gratuita in 48 ore, paghi solo alla consegna"
+- Tono tra parentesi alla fine: (urgenza) o (autorevole) o (empatico)
+- Lunghezza: 80-100 parole
+- Riga vuota tra un testo e l'altro
+
+STRUTTURA PROMPT IMMAGINE (3 prompt, uno per ogni voiceover):
+- Titolo: "Prompt immagine [numero] — [caso d'uso/angle]"
+- Blocco 1: contesto e sfondo realistico e specifico
+- Blocco 2: prodotto come appare nell'immagine con dettagli visivi precisi
+- Blocco 3: testo overlay con headline del vantaggio + 3 bullet specs + bollini qualità pertinenti al prodotto
+- Riga vuota tra un prompt e l'altro
+
+Scrivi tutto in italiano. Linguaggio diretto, concreto, colloquiale. Mai falso, mai esagerato, mai generico.`
 
   try {
     const data = await apiCall(SYS_ADS, [{ role:'user', content: prompt }]);
