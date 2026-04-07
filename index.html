@@ -156,6 +156,8 @@ if (sessionStorage.getItem('lpg_auth') === '1') {
 const COUNTRIES = [["it","🇮🇹 Italia"],["es","🇪🇸 Spagna"],["fr","🇫🇷 Francia"],["de","🇩🇪 Germania"],["pt","🇵🇹 Portogallo"],["ro","🇷🇴 Romania"]];
 const MODEL = "claude-sonnet-4-20250514";
 const MODEL_RESEARCH = "claude-haiku-4-5-20251001";
+
+const SYS_ADS = `Sei un copywriter esperto di performance marketing italiano per campagne Meta Ads COD. Target: over 50, bassa scolarizzazione. Scrivi testi reali, colloquiali, credibili. Mai linguaggio da pubblicità, mai superlativi vuoti. Ogni testo deve sembrare scritto da una persona vera.`;
 const SITES = [{"name": "shopgadgetitalia.com", "url": "https://www.shopgadgetitalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "jK8H CAgX CG34 n2Qy doSL p0AQ"}, {"name": "risparmintelligenti.com", "url": "https://www.risparmintelligenti.com", "username": "giuliocapuozzo@yahoo.com", "password": "1d9v aaDs 4FHp ZQEe Mdzd xICn"}, {"name": "biologonutrizionistadigiorgio.com", "url": "https://www.biologonutrizionistadigiorgio.com", "username": "giuliocapuozzo@yahoo.com", "password": "0c2m cfrZ BXVm pXLZ lHlY yMa2"}, {"name": "shopsilveritalia.com", "url": "https://www.shopsilveritalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "ae2m LV9l SWyK EztT OcZV UZG3"}, {"name": "shopgolditalia.com", "url": "https://www.shopgolditalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "fzDF sh5C gD44 ep6j lT8i vZ7p"}, {"name": "miglioriofferteprime.com", "url": "https://www.miglioriofferteprime.com", "username": "giuliocapuozzo@yahoo.com", "password": "5le6 tnBt 1iGW RS0u kgZR ti3e"}];
 
 const SYS_RESEARCH = `Sei un esperto ricercatore di mercato per campagne di affiliazione COD italiane ed europee. Analizzi prodotti di consumo per un target over 50 a bassa scolarizzazione. Cerchi tensioni di mercato reali: cosa vuole il cliente ma teme, quali caratteristiche premium esistono nei modelli top ma non sono mai tutte insieme in un prodotto consumer. Rispondi sempre in italiano, in modo strutturato, concreto e pratico.`;
@@ -192,6 +194,9 @@ const state = {
   showImportResearch: false,
   importedResearch: '',
   sessionRestored: false,
+  adsText: null,
+  adsLink: null,
+  generatingAds: false,
   apiKeySaved: false,
 };
 
@@ -488,7 +493,50 @@ async function publishWP() {
   state.publishing = false; render();
 }
 
+// ── ADS GENERATION ───────────────────────────────────────────────
+async function generateAds() {
+  if (!state.copy || !state.apiKey) return;
+  state.generatingAds = true; state.error = ''; render();
+  const c = state.copy;
+  const prompt = `Prodotto: ${c.brandName}
+Headline: ${c.headline}
+Bullets: ${(c.bullets||[]).join(' | ')}
+Prezzo: ${c.pricing?.prezzoScontato}€ (era ${c.pricing?.prezzoOriginale}€)
+Bundle: ${(c.pricing?.items||[]).join(', ')}
+Paure principali over 50: ${(c.faq||[]).slice(0,3).map(f=>f.domanda).join(' | ')}
+Recensione 1: ${(c.recensioni||[])[0]?.testo||''}
+Recensione 2: ${(c.recensioni||[])[1]?.testo||''}
+
+Scrivi esattamente questo, senza titoli aggiuntivi, senza numerazioni, solo i testi separati da una riga vuota:
+
+— 3 testi per VIDEO CON AVATAR (persona che parla in camera). Ognuno inizia con un hook di 5-8 parole fortissimo, poi il testo parlato in prima persona. Ognuno affronta un angle diverso estratto dalle paure/tensioni del prodotto. Tono: reale, colloquiale, come se stesse parlando a un amico. Lunghezza: 60-90 parole. Nessun titolo, nessuna etichetta, solo il testo.
+
+— 3 testi per VOICEOVER (voce fuori campo su video del prodotto). Ognuno inizia con un hook, poi descrive il prodotto e risolve una paura specifica. Tono indicato tra parentesi alla fine: (autorevole) o (empatico) o (urgenza). Lunghezza: 50-70 parole. Nessun titolo, nessuna etichetta, solo il testo.
+
+— 3 prompt per generare immagini ads con GPT Image o Nanobanana. Ogni prompt è strutturato in 3 blocchi separati da virgola: [contesto e sfondo] [descrizione prodotto come appare nell'immagine] [testo in overlay: titolo breve + subtitle + 3 bullet + eventuali bollini qualità pertinenti al prodotto]. Nessun titolo, nessuna etichetta, solo il prompt.`;
+
+  try {
+    const data = await apiCall(SYS_ADS, [{ role:'user', content: prompt }]);
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const text = extractText(data);
+    if (!text.trim()) throw new Error('Risposta vuota');
+    state.adsText = text;
+    // Prepare download link
+    const slug = (c.brandName||'ads').replace(/[™®\s]+/g,'-').toLowerCase();
+    const filename = 'Ads-' + slug + '-' + new Date().toISOString().slice(0,10) + '.txt';
+    const uri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+    state.adsLink = { uri, filename };
+  } catch(e) { state.error = 'Errore ads: ' + e.message; }
+  state.generatingAds = false; render();
+}
+
 // ── RENDER ────────────────────────────────────────────────────────
+let _renderTimer = null;
+function scheduleRender() {
+  clearTimeout(_renderTimer);
+  _renderTimer = setTimeout(render, 1500);
+}
+
 function el(tag, attrs, ...children) {
   const e = document.createElement(tag);
   if (attrs) Object.entries(attrs).forEach(([k,v]) => {
@@ -509,11 +557,15 @@ function btn(cls,label,onclick,disabled=false) {
   if(disabled) b.disabled=true; return b;
 }
 function inp(placeholder,value,oninput,type='text') {
-  const e=el('input',{type,placeholder,value}); e.oninput=oninput; return e;
+  const e=el('input',{type,placeholder,value});
+  e.oninput = ev => { oninput(ev); scheduleRender(); };
+  return e;
 }
 function ta(placeholder,value,oninput,rows=5) {
   const e=document.createElement('textarea');
-  e.rows=rows; e.placeholder=placeholder; e.value=value; e.oninput=oninput; return e;
+  e.rows=rows; e.placeholder=placeholder; e.value=value;
+  e.oninput = ev => { oninput(ev); scheduleRender(); };
+  return e;
 }
 
 function renderSettings() {
@@ -599,7 +651,7 @@ function renderStep1() {
   const origPrice = state.form.originalPrice||(state.form.price?String(Math.round(parseInt(state.form.price)*2)):'');
   const sel = document.createElement('select');
   COUNTRIES.forEach(([c,l]) => { const o=document.createElement('option'); o.value=c; o.text=l; if(c===state.form.country) o.selected=true; sel.appendChild(o); });
-  sel.oninput = e => state.form.country = e.target.value;
+  sel.oninput = e => { state.form.country = e.target.value; scheduleRender(); };
   const startBtn = btn('btn-p',
     state.loading ? [el('span',{class:'pulse'},'◉'),` ${state.loadingMsg}`] : ['🔍 Avvia Ricerca di Mercato'],
     runResearch, !canStart||state.loading
@@ -806,7 +858,21 @@ function renderStep4() {
               el('div',{class:'info-note'},'Verifica snippet PHP e credenziali nelle impostazioni ⚙')
             )
       ) : el('div',{})
-    ) : el('div',{class:'info-note',style:{padding:'12px 0'}},'← Genera prima il copy nello step 3')
+    ) : el('div',{class:'info-note',style:{padding:'12px 0'}},'← Genera prima il copy nello step 3'),
+
+    // ADS SECTION
+    state.copy ? el('div',{style:{marginTop:'20px'}},
+      el('div',{style:{borderTop:'1px solid var(--border)',paddingTop:'20px',marginBottom:'14px'}},
+        el('div',{style:{fontSize:'14px',fontWeight:'600',marginBottom:'6px'}},'✍ Testi per le Ads'),
+        el('p',{style:{fontSize:'13px',color:'var(--text-sub)',lineHeight:'1.65',marginBottom:'14px'}},'Genera 3 avatar ads, 3 voiceover e 3 prompt immagine basati sul copy — pronto da scaricare in .txt.')
+      ),
+      el('div',{class:'frow'},
+        !state.adsLink
+          ? btn('btn-s', state.generatingAds ? [el('span',{class:'pulse'},'◉'),' Generando ads...'] : ['✍ Genera Testi Ads'], generateAds, state.generatingAds || !state.copy)
+          : el('a',{href:state.adsLink.uri, download:state.adsLink.filename, class:'rl-link', onclick:()=>setTimeout(()=>{state.adsLink=null;render();},1000)}, '⬇ Scarica .txt Ads'),
+        state.adsLink ? btn('btn-s','↺ Rigenera',()=>{state.adsLink=null;state.adsText=null;generateAds();}) : el('div',{})
+      )
+    ) : el('div',{})
   );
 }
 
