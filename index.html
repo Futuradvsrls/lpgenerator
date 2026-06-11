@@ -156,26 +156,33 @@ if (sessionStorage.getItem('lpg_auth') === '1') {
 const COUNTRIES = [["it","🇮🇹 Italia"],["es","🇪🇸 Spagna"],["fr","🇫🇷 Francia"],["de","🇩🇪 Germania"],["pt","🇵🇹 Portogallo"],["ro","🇷🇴 Romania"]];
 const MODEL = "claude-sonnet-4-20250514";
 const MODEL_RESEARCH = "claude-haiku-4-5-20251001";
+const SITES = [{"name": "shopgadgetitalia.com", "url": "https://www.shopgadgetitalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "jK8H CAgX CG34 n2Qy doSL p0AQ"}, {"name": "risparmintelligenti.com", "url": "https://www.risparmintelligenti.com", "username": "giuliocapuozzo@yahoo.com", "password": "1d9v aaDs 4FHp ZQEe Mdzd xICn"}, {"name": "biologonutrizionistadigiorgio.com", "url": "https://www.biologonutrizionistadigiorgio.com", "username": "giuliocapuozzo@yahoo.com", "password": "0c2m cfrZ BXVm pXLZ lHlY yMa2"}, {"name": "shopsilveritalia.com", "url": "https://www.shopsilveritalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "ae2m LV9l SWyK EztT OcZV UZG3"}, {"name": "shopgolditalia.com", "url": "https://www.shopgolditalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "fzDF sh5C gD44 ep6j lT8i vZ7p"}, {"name": "miglioriofferteprime.com", "url": "https://www.miglioriofferteprime.com", "username": "giuliocapuozzo@yahoo.com", "password": "5le6 tnBt 1iGW RS0u kgZR ti3e"}];
 
-const SYS_ADS = `Sei un copywriter esperto di performance marketing italiano per campagne Meta Ads COD. Target: over 50, bassa scolarizzazione. Scrivi testi reali, colloquiali, credibili. Mai linguaggio da pubblicità, mai superlativi vuoti. Ogni testo deve sembrare scritto da una persona vera.`;
-const SITES = [{"name": "shopgadgetitalia.com", "url": "https://www.shopgadgetitalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "jK8H CAgX CG34 n2Qy doSL p0AQ"}, {"name": "risparmintelligenti.com", "url": "https://www.risparmintelligenti.com", "username": "giuliocapuozzo@yahoo.com", "password": "1d9v aaDs 4FHp ZQEe Mdzd xICn"}, {"name": "biologonutrizionistadigiorgio.com", "url": "https://www.biologonutrizionistadigiorgio.com", "username": "giuliocapuozzo@yahoo.com", "password": "0c2m cfrZ BXVm pXLZ lHlY yMa2"}, {"name": "shopsilveritalia.com", "url": "https://www.shopsilveritalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "ae2m LV9l SWyK EztT OcZV UZG3"}, {"name": "shopgolditalia.com", "url": "https://www.shopgolditalia.com", "username": "giuliocapuozzo@yahoo.com", "password": "fzDF sh5C gD44 ep6j lT8i vZ7p"}, {"name": "miglioriofferteprime.com", "url": "https://www.miglioriofferteprime.com", "username": "giuliocapuozzo@yahoo.com", "password": "5le6 tnBt 1iGW RS0u kgZR ti3e"},
-    {"name": "scontigiusti.com", "url": "https://www.scontigiusti.com", "username": "giuliocapuozzo@yahoo.com", "password": "f3Q2 hnRD 8CEq 8jxK HBrQ FvdR"}];
+const SYS_RESEARCH = `Sei un ricercatore di mercato per landing page direct-response italiane ed europee. Analizzi categorie di prodotti di consumo per un target over 50. Cerchi dati concreti e verificabili: parametri tecnici reali e i loro range, difetti noti della categoria, gerarchia delle funzionalita piu ricercate, usi comuni, linguaggio del mercato. Rispondi sempre in italiano, strutturato e concreto. Riporta solo cio che trovi nelle fonti o nei dati forniti.`;
 
-const SYS_RESEARCH = `Sei un esperto ricercatore di mercato per campagne di affiliazione COD italiane ed europee. Analizzi prodotti di consumo per un target over 50 a bassa scolarizzazione. Cerchi tensioni di mercato reali: cosa vuole il cliente ma teme, quali caratteristiche premium esistono nei modelli top ma non sono mai tutte insieme in un prodotto consumer. Rispondi sempre in italiano, in modo strutturato, concreto e pratico.`;
+const SYS_BRIEF = `Sei un analista che sintetizza ricerche di mercato in un Brief JSON strutturato. Il brief sara la UNICA fonte di verita per il copywriting: ogni spec deve avere valore numerico e unita presi dalla ricerca o dai dati prodotto forniti dall'utente. Non inventare numeri: se un dato manca, lascia il campo vuoto. Rispondi SOLO con JSON valido, nessun backtick, nessun testo prima o dopo.`;
 
-const SYS_COPY = `Sei il miglior copywriter italiano per landing page COD su Meta Ads. Target: over 50, bassa scolarizzazione. Linguaggio semplice, emotivo, specifico. Mai tecnicismi vuoti.
-REGOLA TITOLO: Formula: [categoria] + [spec premium che di solito ha un limite] + [limite risolto] + [3-4 caratteristiche che smontano paure specifiche over 50].
-REGOLA BULLET: caratteristiche premium reali con numeri/materiali/tecnologie, scritte semplice. Prima la caratteristica in grassetto con il nome tecnico, poi il beneficio concreto.
-REGOLA RECENSIONI: ogni recensione risolve una specifica obiezione del target attraverso un'esperienza personale realistica.
-REGOLA FAQ: rispondono alle paure reali di un over 50.
+const SYS_COPY = `Sei un copywriter direct-response italiano per landing page rivolte a un target over 50. Registro: giornalistico, concreto, specifico. VIETATI: aggettivi emotivi (rivoluzionario, incredibile, straordinario), storytelling personale, tecnicismi non spiegati.
+REGOLA SUPREMA: ogni numero, spec e claim deve esistere nel Brief JSON ricevuto. Se un dato non e nel brief, non scriverlo.
+HEADLINE_A (eliminazione difetto): [categoria] + [spec numerica forte] + SENZA [difetto noto in MAIUSCOLO] + [risultato misurabile] + [benefit target] + [costo o durata quantificato]. 18-30 parole, numeri in cifre.
+HEADLINE_B (superlativo di mercato): [La/Il piu X sul mercato]: + 3 numeri concreti (es. peso, autonomia, potenza).
+SOTTOTITOLO: la prova dell'headline, mai la ripetizione - il come (tecnologia in parole semplici) + il beneficio.
+BULLET a 3 movimenti: <b>[spec con numero]</b>: [traduzione nella vita quotidiana del target, linguaggio parlato] + [contrasto con l'alternativa peggiore che il target ha gia vissuto]. Almeno 3 bullet su 5 con numeri. Ordine = gerarchia_funzionalita del brief.
+VANTAGGI: 3 paragrafi a 4 movimenti (~100 parole): 1) il problema noto della categoria 2) come il prodotto lo elimina, spec in <strong> 3) scena di vita presa dal brief 4) chiusura sul beneficio finale. Se tipo_angle=tool domina la scena d'uso; se security il paragrafo si apre sulla paura specifica; se savings ogni frase quantifica con numeri.
+FAQ: 6 obiezioni dal brief formulate in prima persona col linguaggio del target (es. "il MIO soffitto...", "troppo complicata PER ME?") + 2 fisse (reso con i giorni_reso del brief, spedizione 24-48 ore). Risposta = rassicurazione + spec dal brief + contrasto dove esiste.
+CTA tematizzata: [verbo del beneficio] + [oggetto del desiderio].
+MARQUEE: slot 1 = miglior spec o difetto eliminato; slot 2 = sconto con la percentuale del brief; slot 3 = pagamento alla consegna.
+PRICING items: ogni voce bundle dal brief con (valore €X) se presente; chiusura con la garanzia del brief.
 Rispondi SOLO con JSON valido. Nessun backtick, nessun markdown, nessun testo prima o dopo.`;
+
+const SYS_CHECK = `Sei un revisore qualita per landing page. Confronti il copy generato con il Brief JSON e segnali SOLO errori reali: numeri diversi tra punti diversi della pagina, numeri assenti dal brief, garanzia o giorni di reso incoerenti tra blocchi (bullet, pricing, FAQ, marquee), percentuali incoerenti, etichette tecniche invertite (caldo/freddo, min/max), testo segnaposto residuo, campi vuoti. Niente segnalazioni stilistiche. Rispondi SOLO con JSON valido: {"ok":true,"errori":[]} oppure {"ok":false,"errori":[{"dove":"blocco","problema":"descrizione","correzione":"proposta"}]}`;
 
 // ── STATE ─────────────────────────────────────────────────────────
 const state = {
   dark: false,
   step: 1,
   maxStep: 1,
-  apiKey: localStorage.getItem('lpg_apikey') || '',
+  apiKey: localStorage.getItem('lpg_apikey') || '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',
   form: { product:'', price:'', originalPrice:'', country:'it', brief:'' },
   research: '',
   copy: null,
@@ -194,10 +201,12 @@ const state = {
   researchLink: null,
   showImportResearch: false,
   importedResearch: '',
+  briefJson: '',
+  check: null,
+  checking: false,
+  realReviews: '',
+  aziendaCfg: JSON.parse(localStorage.getItem('lpg_azienda') || '{"nome":"","via":"","citta":"","orari":"Lun-Ven 09:00 - 18:30","email":""}'),
   sessionRestored: false,
-  adsText: null,
-  adsLink: null,
-  generatingAds: false,
   apiKeySaved: false,
 };
 
@@ -238,6 +247,7 @@ function saveSession() {
     localStorage.setItem('lpg_session', JSON.stringify({
       form: state.form,
       research: state.research,
+      briefJson: state.briefJson,
       copy: state.copy,
       step: state.step,
       maxStep: state.maxStep,
@@ -251,6 +261,7 @@ function loadSession() {
     if (!s) return false;
     if (s.form) state.form = s.form;
     if (s.research) state.research = s.research;
+    if (s.briefJson) state.briefJson = s.briefJson;
     if (s.copy) state.copy = s.copy;
     if (s.step && s.step > 1) {
       state.step = s.step;
@@ -264,7 +275,7 @@ function loadSession() {
 function clearSession() {
   localStorage.removeItem('lpg_session');
   state.form = { product:'', price:'', originalPrice:'', country:'it', brief:'' };
-  state.research = ''; state.copy = null;
+  state.research = ''; state.copy = null; state.briefJson = ''; state.check = null;
   state.step = 1; state.maxStep = 1;
   state.error = ''; state.done = false;
   state.sessionRestored = false;
@@ -279,6 +290,9 @@ function goToStep(n) {
 
 // ── INJECT ────────────────────────────────────────────────────────
 function injectCopy(template, copy) {
+  // Dati azienda reali dalle impostazioni (se assenti, il footer del template resta invariato)
+  if (!copy.azienda && state.aziendaCfg && state.aziendaCfg.nome) copy.azienda = { ...state.aziendaCfg };
+
   const json = JSON.parse(JSON.stringify(template));
   function walk(elements) {
     if (!Array.isArray(elements)) return;
@@ -397,13 +411,31 @@ function injectCopy(template, copy) {
 // ── ACTIONS ───────────────────────────────────────────────────────
 async function runResearch() {
   if (!state.form.product || !state.form.price || !state.apiKey) return;
-  state.loading = true; state.loadingMsg = 'Ricerca mercato in corso...'; state.error = ''; render();
-  const brief = state.form.brief.trim() ? `\n\nBRIEF SPECIFICO:\n${state.form.brief}\n\nSe cita modelli specifici, cercali online.` : '';
+  state.loading = true; state.error = ''; render();
+  const userData = state.form.brief.trim() ? `\n\nDATI PRODOTTO FORNITI DALL'UTENTE (fonte primaria per le spec):\n${state.form.brief}` : '';
   try {
-    const data = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Analizza il mercato di "${state.form.product}" per costruire il prodotto ideale per una LP COD italiana. Target: over 50, bassa scolarizzazione.${brief}\n\nCerca online e rispondi con:\n## TENSIONI DI MERCATO\nMin 5 tensioni: cosa vuole → perché lo teme → come risolverla.\n## CARATTERISTICHE PREMIUM DEI MODELLI TOP\nNome tecnico + perché importante per over 50.\n## PAURE E OBIEZIONI OVER 50\nLe 5 paure principali acquistando online COD.\n## SPECIFICHE TECNICHE CHE DANNO CREDIBILITÀ\nNumeri, materiali, certificazioni reali.\n## ACCESSORI E OMAGGI IDEALI\n## 3 ANGOLI DI VENDITA PIÙ EFFICACI` }], true, MODEL_RESEARCH);
-    if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
-    state.research = extractText(data);
-    if (!state.research) throw new Error('Nessuna risposta');
+    // 1A+1B — categoria, difetti noti, gerarchia, usi, paure
+    state.loadingMsg = 'Ricerca 1/3: categoria e funzionalità...'; render();
+    const r1 = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Categoria: "${state.form.product}". Cerca online e rispondi con:\n## COME FUNZIONA LA CATEGORIA\nParametri tecnici standard e i loro range reali.\n## DIFETTI NOTI DELLA CATEGORIA\nIl difetto principale + i secondari (le frustrazioni che chi compra conosce già).\n## GERARCHIA FUNZIONALITÀ\nLe funzionalità più ricercate, dalla più importante alla meno importante.\n## USI COMUNI\nCosa ci fanno davvero le persone: scene concrete di vita quotidiana.\n## PAURE E OBIEZIONI DEL TARGET OVER 50\nLe 6 principali, formulate nel suo linguaggio.${userData}` }], true, MODEL_RESEARCH);
+    if (r1.error) throw new Error(r1.error.message||JSON.stringify(r1.error));
+    const t1 = extractText(r1);
+    if (!t1) throw new Error('Nessuna risposta dalla ricerca 1');
+
+    // 1C — contesto competitivo
+    state.loadingMsg = 'Ricerca 2/3: contesto competitivo...'; render();
+    const r2 = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Categoria: "${state.form.product}". Cerca online e rispondi con:\n## MODELLI PIÙ FAMOSI E AMATI\nQuali sono e perché piacciono.\n## LINGUAGGIO DEL MERCATO\nParole tecniche che il mercato usa e il pubblico riconosce.\n## BENCHMARK PER CONTRASTI\nNumeri di riferimento dei modelli noti (pesi, prezzi, prestazioni) utili per confronti del tipo "le tradizionali pesano X / costano Y".` }], true, MODEL_RESEARCH);
+    if (r2.error) throw new Error(r2.error.message||JSON.stringify(r2.error));
+    const t2 = extractText(r2);
+    state.research = t1 + '\n\n──────────── CONTESTO COMPETITIVO ────────────\n\n' + t2;
+
+    // 1D — sintesi nel Brief JSON
+    state.loadingMsg = 'Ricerca 3/3: sintesi nel Brief JSON...'; render();
+    const origPrice = state.form.originalPrice || String(Math.round(parseInt(state.form.price)*2));
+    const scontoPct = Math.round((1 - parseFloat(state.form.price)/parseFloat(origPrice)) * 100) || 50;
+    const r3 = await apiCall(SYS_BRIEF, [{ role:'user', content:`RICERCA:\n${state.research}\n\nPRODOTTO: ${state.form.product}\nPREZZO SCONTATO: ${state.form.price}€ | PREZZO PIENO: ${origPrice}€ | SCONTO: ${scontoPct}%${userData}\n\nCompila questo Brief JSON usando solo dati reali dalla ricerca e dai dati forniti. tipo_angle: "tool" (l'angle è il caso d'uso), "security" (l'angle è la paura risolta) o "savings" (l'angle sono i numeri concreti). Schema:\n{"prodotto":{"nome":"","categoria":"","tipo_angle":""},"target":{"descrizione":"","scene_di_vita":["","",""],"paure":["","",""]},"categoria_mercato":{"difetto_noto_principale":"","difetti_secondari":["",""],"linguaggio_mercato":["",""],"benchmark_contrasto":""},"spec":[{"nome":"","valore":"","unita":"","beneficio":"","contrasto":""}],"gerarchia_funzionalita":["","","","",""],"angles":[{"titolo":"","spec_collegate":[""],"scena":""},{"titolo":"","spec_collegate":[""],"scena":""},{"titolo":"","spec_collegate":[""],"scena":""}],"obiezioni":[{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""}],"offerta":{"prezzo_pieno":"${origPrice}","prezzo_scontato":"${state.form.price}","sconto_pct":"${scontoPct}","bundle":[{"item":"","valore":""}],"garanzia_anni":"2","giorni_reso":"30"}}` }], false, MODEL_RESEARCH);
+    if (r3.error) throw new Error(r3.error.message||JSON.stringify(r3.error));
+    const briefObj = parseJSON(extractText(r3));
+    state.briefJson = JSON.stringify(briefObj, null, 2);
     goToStep(2); saveSession();
   } catch(e) { state.error = 'Errore ricerca: ' + e.message; }
   finally { state.loading = false; render(); }
@@ -411,17 +443,43 @@ async function runResearch() {
 
 async function generateCopy() {
   if (!state.apiKey) return;
-  state.loading = true; state.loadingMsg = 'Costruendo il prodotto ideale...'; state.error = ''; render();
-  const origPrice = state.form.originalPrice || String(Math.round(parseInt(state.form.price)*2));
+  let briefObj;
+  try { briefObj = JSON.parse(state.briefJson); }
+  catch(e) { state.error = 'Brief JSON non valido — correggilo nello step 2: ' + e.message; render(); return; }
+  state.loading = true; state.loadingMsg = 'Generando il copy dal Brief...'; state.error = ''; render();
   try {
-    const data = await apiCall(SYS_COPY, [{ role:'user', content:`Prodotto: ${state.form.product}\nPrezzo scontato: ${state.form.price}€ | Prezzo originale: ${origPrice}€ | Paese: ${state.form.country}\n${state.form.brief?`\nBRIEF:\n${state.form.brief}\n`:''}\nANALISI DI MERCATO (sintesi):\n${state.research}\n\nJSON puro:\n{"brandName":"NomeProdotto™","headline":"titolo lungo: categoria+spec premium+limite risolto+3-4 caratteristiche over 50","subtitle":"specifiche aggiuntive max 30 parole","bullets":["<b>Spec tecnica</b>: beneficio over 50","<b>Car 2</b>: ben 2","<b>Car 3</b>: ben 3","<b>Car 4</b>: ben 4","<b>Car 5</b>: ben 5"],"ctaText":"ATTIVA LO SCONTO","marquee":["✨ punto di forza specifico","✨ Sconto Attivo","💸 Pagamento in Contrassegno"],"vantaggi":[{"titolo":"Tensione principale risolta","testo":"<p>4-5 frasi semplici con <strong>parole chiave</strong>.</p>"},{"titolo":"Vantaggio 2","testo":"<p>Testo 2</p>"},{"titolo":"Vantaggio 3","testo":"<p>Testo 3</p>"}],"faq":[{"domanda":"Paura reale over 50","risposta":"Risposta max 2 frasi"},{"domanda":"Dom 2","risposta":"Risp 2"},{"domanda":"Dom 3","risposta":"Risp 3"},{"domanda":"Dom 4","risposta":"Risp 4"},{"domanda":"Dom 5","risposta":"Risp 5"},{"domanda":"Dom 6","risposta":"Risp 6"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro 30 giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"scrittoDA":"Scritto da Nome Cognome - Ruolo esperto","pricing":{"title":"Solo per Oggi - 50%","prezzoOriginale":"${origPrice}","prezzoScontato":"${state.form.price}","items":["1 NomeProdotto™","Accessorio omaggio 1","Accessorio omaggio 2","Manuale in italiano","Garanzia 2 anni"]},"cosRicevi":"Ordinando Ora Ricevi:","recensioni":[{"nome":"Nome italiano","eta_citta":"XX anni, Città","testo":"40-50 parole che risolvono obiezione principale","stelle":5},{"nome":"Nome 2","eta_citta":"XX anni, Città","testo":"Risolve obiezione 2","stelle":5},{"nome":"Nome 3","eta_citta":"XX anni, Città","testo":"Risolve obiezione 3","stelle":4}],"azienda":{"nome":"Azienda Srl coerente con nicchia","via":"Via reale, numero","citta":"CAP Città Provincia","orari":"Lun-Ven 09:00 - 18:30","email":"assistenza@dominio.it"}}` }]);
+    const data = await apiCall(SYS_COPY, [{ role:'user', content:`BRIEF JSON (unica fonte di verità — ogni numero e claim deve venire da qui):\n${state.briefJson}\n\nGenera il copy completo della landing. JSON puro con questo schema:\n{"brandName":"NomeProdotto™","headline_A":"variante eliminazione difetto","headline_B":"variante superlativo + 3 numeri","subtitle":"prova dell'headline, max 30 parole","bullets":["<b>Spec con numero</b>: vita quotidiana + contrasto","x5 totali, ordine = gerarchia_funzionalita"],"ctaText":"ATTIVA LO SCONTO","ctaTematizzata":"verbo del beneficio + oggetto del desiderio","marquee":["✨ miglior spec o difetto eliminato","✨ Sconto [sconto_pct]% Attivo Oggi","💸 Pagamento alla Consegna Sicuro"],"vantaggi":[{"titolo":"angle 1 dal brief","testo":"<p>paragrafo a 4 movimenti con <strong>spec</strong></p>"},{"titolo":"angle 2","testo":"<p>...</p>"},{"titolo":"angle 3","testo":"<p>...</p>"}],"faq":[{"domanda":"obiezione 1 in prima persona","risposta":"rassicurazione + spec"},{"domanda":"...x6 dal brief"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro [giorni_reso] giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"pricing":{"title":"Solo per Oggi - [sconto_pct]%","prezzoOriginale":"[prezzo_pieno]","prezzoScontato":"[prezzo_scontato]","items":["1 NomeProdotto™","voci bundle dal brief con (valore €X)","Garanzia [garanzia_anni] anni"]},"cosRicevi":"Ordinando Ora Ricevi:"}` }]);
     if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text = extractText(data);
     if (!text.trim()) throw new Error('Risposta vuota — riprova');
-    state.copy = parseJSON(text);
+    const c = parseJSON(text);
+    c.headline = c.headline || c.headline_A;
+    if (state.realReviews.trim()) c.recensioni = parseRealReviews(state.realReviews);
+    state.copy = c;
+    state.check = null;
     goToStep(3); saveSession();
   } catch(e) { state.error = 'Errore copy: ' + e.message; }
   finally { state.loading = false; render(); }
+}
+
+// Recensioni reali incollate dall'utente: "Nome | 64 anni, Bergamo | testo | 5" (una per riga)
+function parseRealReviews(txt) {
+  return txt.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+    const p = l.split('|').map(s=>s.trim());
+    return { nome:p[0]||'', eta_citta:p[1]||'', testo:p[2]||'', stelle:Math.min(5,Math.max(1,parseInt(p[3])||5)) };
+  }).filter(r=>r.nome && r.testo);
+}
+
+// Coherence check pre-pubblicazione (non bloccante)
+async function runCheck() {
+  if (!state.copy || !state.apiKey) return;
+  state.checking = true; state.check = null; render();
+  try {
+    const data = await apiCall(SYS_CHECK, [{ role:'user', content:`BRIEF JSON:\n${state.briefJson||'(non disponibile)'}\n\nCOPY GENERATO:\n${JSON.stringify(state.copy,null,1)}\n\nVerifica coerenza e completezza.` }], false, MODEL_RESEARCH);
+    if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
+    state.check = parseJSON(extractText(data));
+  } catch(e) { state.check = { ok:false, errori:[{dove:'check',problema:e.message,correzione:'Riprova il check'}] }; }
+  state.checking = false; render();
 }
 
 function prepareDownload() {
@@ -494,79 +552,7 @@ async function publishWP() {
   state.publishing = false; render();
 }
 
-// ── ADS GENERATION ───────────────────────────────────────────────
-async function generateAds() {
-  if (!state.copy || !state.apiKey) return;
-  state.generatingAds = true; state.error = ''; render();
-  const c = state.copy;
-  const prompt = `Prodotto: ${c.brandName}
-Headline: ${c.headline}
-Prezzo: ${c.pricing?.prezzoScontato}€ (era ${c.pricing?.prezzoOriginale}€)
-Bullets: ${(c.bullets||[]).join(' | ')}
-Vantaggi: ${(c.vantaggi||[]).map(v=>v.titolo+': '+v.testo.replace(/<[^>]+>/g,'')).join(' | ')}
-Paure over 50: ${(c.faq||[]).slice(0,4).map(f=>f.domanda).join(' | ')}
-Recensioni: ${(c.recensioni||[]).map(r=>r.testo).join(' | ')}
-
-ISTRUZIONI:
-
-Prima analizza il prodotto e decidi la logica degli angles:
-- Se è un PRODOTTO STRUMENTO (idropulitrice, cesoia, gazebo, ecc.): usa 6 casi d'uso reali come angles. Il caso d'uso è l'angle. Dentro ogni testo il caso d'uso apre il testo, poi entra il prodotto, poi le specs come prova.
-- Se è un PRODOTTO SICUREZZA/CONTROLLO (videocamera, sensori, gps): usa paure e desideri emotivi come angles.
-- Se è un PRODOTTO RISPARMIO (centralina, pannelli): usa il vantaggio economico concreto con numeri reali.
-- Se è un PRODOTTO SALUTE/BENESSERE: usa qualità della vita e limiti fisici risolti.
-
-Per prodotti strumento: rileva i 6 casi d'uso più importanti e scrivili in cima al file come lista numerata prima dei testi.
-
-STRUTTURA AVATAR (6 testi, uno per ogni caso d'uso o angle):
-- Titolo: "Avatar [numero] — [caso d'uso/angle]"
-- Hook: frase secca e diretta che descrive una situazione reale e riconoscibile. Mai domande. Mai "mi ha cambiato la vita". Mai superlativi vuoti. Una situazione concreta che il target riconosce come sua.
-- Introduzione prodotto con nome
-- Sviluppo del caso d'uso con specs tecniche tradotte in vantaggi concreti
-- CTA: "Paghi solo quando arriva il corriere" o "Trovi il link qui sotto, paghi alla consegna"
-- Lunghezza: 80-100 parole
-- Riga vuota tra un testo e l'altro
-
-STRUTTURA VOICEOVER (3 testi, i 3 casi d'uso/angles più forti):
-- Titolo: "Voiceover [numero] — [vantaggio principale]"
-- Prima frase: vantaggio principale per il cliente, chiaro e immediato
-- Seconda frase: introduzione del prodotto con nome e cosa fa
-- Sviluppo: specs tecniche che supportano quel vantaggio + vantaggi secondari
-- CTA: "Consegna gratuita in 48 ore, paghi solo alla consegna"
-- Tono tra parentesi alla fine: (urgenza) o (autorevole) o (empatico)
-- Lunghezza: 80-100 parole
-- Riga vuota tra un testo e l'altro
-
-STRUTTURA PROMPT IMMAGINE (3 prompt, uno per ogni voiceover):
-- Titolo: "Prompt immagine [numero] — [caso d'uso/angle]"
-- Blocco 1: contesto e sfondo realistico e specifico
-- Blocco 2: prodotto come appare nell'immagine con dettagli visivi precisi
-- Blocco 3: testo overlay con headline del vantaggio + 3 bullet specs + bollini qualità pertinenti al prodotto
-- Riga vuota tra un prompt e l'altro
-
-Scrivi tutto in italiano. Linguaggio diretto, concreto, colloquiale. Mai falso, mai esagerato, mai generico.`
-
-  try {
-    const data = await apiCall(SYS_ADS, [{ role:'user', content: prompt }]);
-    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const text = extractText(data);
-    if (!text.trim()) throw new Error('Risposta vuota');
-    state.adsText = text;
-    // Prepare download link
-    const slug = (c.brandName||'ads').replace(/[™®\s]+/g,'-').toLowerCase();
-    const filename = 'Ads-' + slug + '-' + new Date().toISOString().slice(0,10) + '.txt';
-    const uri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
-    state.adsLink = { uri, filename };
-  } catch(e) { state.error = 'Errore ads: ' + e.message; }
-  state.generatingAds = false; render();
-}
-
 // ── RENDER ────────────────────────────────────────────────────────
-let _renderTimer = null;
-function scheduleRender() {
-  clearTimeout(_renderTimer);
-  _renderTimer = setTimeout(render, 1500);
-}
-
 function el(tag, attrs, ...children) {
   const e = document.createElement(tag);
   if (attrs) Object.entries(attrs).forEach(([k,v]) => {
@@ -587,15 +573,11 @@ function btn(cls,label,onclick,disabled=false) {
   if(disabled) b.disabled=true; return b;
 }
 function inp(placeholder,value,oninput,type='text') {
-  const e=el('input',{type,placeholder,value});
-  e.oninput = ev => { oninput(ev); scheduleRender(); };
-  return e;
+  const e=el('input',{type,placeholder,value}); e.oninput=oninput; return e;
 }
 function ta(placeholder,value,oninput,rows=5) {
   const e=document.createElement('textarea');
-  e.rows=rows; e.placeholder=placeholder; e.value=value;
-  e.oninput = ev => { oninput(ev); scheduleRender(); };
-  return e;
+  e.rows=rows; e.placeholder=placeholder; e.value=value; e.oninput=oninput; return e;
 }
 
 function renderSettings() {
@@ -622,6 +604,18 @@ function renderSettings() {
         }, state.apiKeySaved ? '✓ Salvata' : '💾 Salva')
       ),
       el('div',{class:'info-note'}, state.apiKey ? '✓ Chiave presente — clicca Salva dopo ogni modifica' : '⚠ Inserisci la tua API key da console.anthropic.com → API Keys')
+    ),
+    el('div',{style:{marginBottom:'14px'}},
+      lbl('Dati azienda per il footer (dati reali della tua azienda)'),
+      el('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px',marginBottom:'8px'}},
+        inp('Ragione sociale', state.aziendaCfg.nome, e=>{state.aziendaCfg.nome=e.target.value;}),
+        inp('Email assistenza', state.aziendaCfg.email, e=>{state.aziendaCfg.email=e.target.value;}),
+        inp('Via e numero civico', state.aziendaCfg.via, e=>{state.aziendaCfg.via=e.target.value;}),
+        inp('CAP Città Provincia', state.aziendaCfg.citta, e=>{state.aziendaCfg.citta=e.target.value;})
+      ),
+      el('div',{class:'frow'},
+        btn('btn-g','💾 Salva dati azienda',()=>{localStorage.setItem('lpg_azienda',JSON.stringify(state.aziendaCfg));render();})
+      )
     ),
     el('div',{style:{marginBottom:'14px'}},
       lbl('Sito WordPress attivo'),
@@ -681,7 +675,7 @@ function renderStep1() {
   const origPrice = state.form.originalPrice||(state.form.price?String(Math.round(parseInt(state.form.price)*2)):'');
   const sel = document.createElement('select');
   COUNTRIES.forEach(([c,l]) => { const o=document.createElement('option'); o.value=c; o.text=l; if(c===state.form.country) o.selected=true; sel.appendChild(o); });
-  sel.oninput = e => { state.form.country = e.target.value; scheduleRender(); };
+  sel.oninput = e => state.form.country = e.target.value;
   const startBtn = btn('btn-p',
     state.loading ? [el('span',{class:'pulse'},'◉'),` ${state.loadingMsg}`] : ['🔍 Avvia Ricerca di Mercato'],
     runResearch, !canStart||state.loading
@@ -743,7 +737,16 @@ function renderStep2() {
         btn('btn-p',state.loading?[el('span',{class:'pulse'},'◉'),` ${state.loadingMsg}`]:['✨ Costruisci Prodotto + Copy'],generateCopy,state.loading),
       )
     ),
-    card([el('div',{class:'scroll-a'},preEl)])
+    card([el('div',{class:'scroll-a'},preEl)]),
+    el('div',{style:{height:'12px'}}),
+    card([
+      el('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px',flexWrap:'wrap'}},
+        el('div',{style:{fontSize:'13px',fontWeight:'600'}},'Brief JSON — unica fonte di verità'),
+        el('span',{class:'tag-b'},'modificabile')
+      ),
+      el('div',{class:'info-note',style:{marginBottom:'8px'}},'Il copy userà SOLO i dati di questo brief: ogni numero, spec e claim. Modifica qui (angle, spec, obiezioni, bundle, garanzia, reso) e rigenera — tutto il copy a valle si riallinea.'),
+      ta('', state.briefJson, e=>{state.briefJson=e.target.value;}, 18)
+    ],'card-accent')
   );
 }
 
@@ -754,10 +757,13 @@ function renderStep3() {
     card([
       el('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'12px',flexWrap:'wrap'}},
         el('span',{style:{fontSize:'15px',fontWeight:'700'}},c.brandName),
-        el('span',{class:'tag-g'},'Generato'),
-        el('span',{style:{color:'var(--text-sub)',fontSize:'11px',marginLeft:'auto'}},c.scrittoDA)
+        el('span',{class:'tag-g'},'Generato dal Brief')
       ),
-      lbl('Headline'),
+      lbl('Headline — scegli la variante da pubblicare'),
+      el('div',{class:'frow',style:{marginBottom:'8px'}},
+        btn(c.headline===c.headline_A?'btn-p':'btn-s','A · Difetto eliminato',()=>{c.headline=c.headline_A;saveSession();render();}),
+        c.headline_B ? btn(c.headline===c.headline_B?'btn-p':'btn-s','B · Superlativo + numeri',()=>{c.headline=c.headline_B;saveSession();render();}) : el('span',{})
+      ),
       el('div',{class:'card-inner',style:{fontSize:'13.5px',lineHeight:'1.65',fontWeight:'600',marginBottom:'12px',borderLeft:'3px solid var(--accent)'}},c.headline),
       lbl('Subtitle'),
       el('div',{style:{color:'var(--text-sub)',fontSize:'13px'}},c.subtitle)
@@ -806,21 +812,22 @@ function renderStep3() {
       ]),
       el('div',{},
         card([
-          lbl('3 Recensioni'),
-          ...(c.recensioni||[]).map(r=>el('div',{class:'rev-card'},
-            el('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'3px',gap:'4px',flexWrap:'wrap'}},
-              el('span',{style:{fontSize:'12.5px',fontWeight:'600'}},r.nome),
-              el('span',{style:{color:'var(--text-muted)',fontSize:'11px'}},r.eta_citta)
-            ),
-            el('div',{style:{color:'var(--amber)',fontSize:'12px',marginBottom:'4px'}},'★'.repeat(r.stelle)+'☆'.repeat(5-r.stelle)),
-            el('div',{style:{color:'var(--text-sub)',fontSize:'12px',lineHeight:'1.5'}},r.testo)
-          ))
+          lbl('Recensioni — incolla quelle reali raccolte (una per riga: Nome | 64 anni, Città | testo | stelle)'),
+          ta('Giuseppe M. | 64 anni, Bergamo | Testo della recensione reale | 5', state.realReviews, e=>{
+            state.realReviews = e.target.value;
+            if (state.copy) state.copy.recensioni = parseRealReviews(state.realReviews);
+            localStorage.setItem('lpg_reviews_draft', state.realReviews);
+          }, 6),
+          el('div',{class:'info-note'}, (c.recensioni&&c.recensioni.length) ? `✓ ${c.recensioni.length} recensioni pronte per l'iniezione` : 'Vuoto: il blocco recensioni del template resta invariato, lo completi dopo in Elementor.')
         ]),
         card([
-          lbl('Azienda Fittizia'),
-          el('div',{style:{fontSize:'13px',fontWeight:'600',marginBottom:'4px'}},c.azienda?.nome),
-          el('div',{style:{color:'var(--text-sub)',fontSize:'12px'}},`${c.azienda?.via}, ${c.azienda?.citta}`),
-          el('div',{style:{color:'var(--accent)',fontSize:'12px'}},c.azienda?.email),
+          lbl('Dati azienda footer'),
+          state.aziendaCfg.nome
+            ? el('div',{},
+                el('div',{style:{fontSize:'13px',fontWeight:'600',marginBottom:'4px'}},state.aziendaCfg.nome),
+                el('div',{style:{color:'var(--text-sub)',fontSize:'12px'}},`${state.aziendaCfg.via}, ${state.aziendaCfg.citta}`),
+                el('div',{style:{color:'var(--accent)',fontSize:'12px'}},state.aziendaCfg.email))
+            : el('div',{class:'info-note'},'Non impostati — inserisci i dati reali della tua azienda nelle Impostazioni ⚙. Se vuoti, il footer del template resta invariato.')
         ])
       )
     ),
@@ -855,13 +862,28 @@ function renderStep4() {
                ['5 bullet points','caratteristiche premium'], ['Marquee ×3',state.copy.marquee?.[0]],
                ['Pricing ×2',`${state.copy.pricing?.prezzoScontato}€ (era ${state.copy.pricing?.prezzoOriginale}€)`],
                ['3 vantaggi','titoli + testi'], ['8 FAQ','domande + risposte'],
-               ['3 recensioni','testimonial + avatar gender-aware'], ['rece-01','prima recensione hero'],
-               ['Azienda footer',state.copy.azienda?.nome],
+               ['Recensioni', (state.copy.recensioni&&state.copy.recensioni.length) ? state.copy.recensioni.length+' reali incollate' : 'nessuna — template invariato'],
+               ['Azienda footer', state.aziendaCfg.nome || 'non impostata — template invariato'],
           ].map(([k,v])=>el('div',{style:{display:'flex',gap:'6px',fontSize:'12px',padding:'3px 0'}},
             el('span',{style:{color:'var(--green)',flexShrink:'0'}},'✓'),
             el('span',{},el('strong',{},k+': '),el('span',{style:{color:'var(--text-sub)'}},v))
           ))
         )
+      ]),
+      card([
+        el('div',{style:{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}},
+          el('div',{style:{fontSize:'13px',fontWeight:'600'}},'🔎 Coherence Check pre-pubblicazione'),
+          btn('btn-s', state.checking?[el('span',{class:'pulse'},'◉'),' Verificando...']:'Verifica ora', runCheck, state.checking),
+          state.check ? (state.check.ok
+            ? el('span',{class:'tag-g'},'✓ Nessuna incongruenza: numeri, garanzia e reso coerenti')
+            : el('span',{style:{fontSize:'11px',color:'var(--amber)',fontWeight:'600'}},`⚠ ${(state.check.errori||[]).length} problemi trovati`)) : el('span',{})
+        ),
+        state.check && !state.check.ok ? el('div',{style:{marginTop:'10px'}},
+          ...(state.check.errori||[]).map(er=>el('div',{style:{fontSize:'12px',padding:'6px 0',borderBottom:'1px solid var(--border)',lineHeight:'1.5'}},
+            el('strong',{},er.dove+': '), er.problema, el('span',{style:{color:'var(--green)'}},' → '+(er.correzione||''))
+          )),
+          el('div',{class:'info-note',style:{marginTop:'8px'}},'Il check non blocca: puoi correggere il Brief (step 2) e rigenerare, oppure procedere comunque.')
+        ) : el('div',{})
       ]),
       el('div',{class:'frow',style:{marginBottom:'1rem'}},
         !state.downloadLink
@@ -888,21 +910,7 @@ function renderStep4() {
               el('div',{class:'info-note'},'Verifica snippet PHP e credenziali nelle impostazioni ⚙')
             )
       ) : el('div',{})
-    ) : el('div',{class:'info-note',style:{padding:'12px 0'}},'← Genera prima il copy nello step 3'),
-
-    // ADS SECTION
-    state.copy ? el('div',{style:{marginTop:'20px'}},
-      el('div',{style:{borderTop:'1px solid var(--border)',paddingTop:'20px',marginBottom:'14px'}},
-        el('div',{style:{fontSize:'14px',fontWeight:'600',marginBottom:'6px'}},'✍ Testi per le Ads'),
-        el('p',{style:{fontSize:'13px',color:'var(--text-sub)',lineHeight:'1.65',marginBottom:'14px'}},'Genera 3 avatar ads, 3 voiceover e 3 prompt immagine basati sul copy — pronto da scaricare in .txt.')
-      ),
-      el('div',{class:'frow'},
-        !state.adsLink
-          ? btn('btn-s', state.generatingAds ? [el('span',{class:'pulse'},'◉'),' Generando ads...'] : ['✍ Genera Testi Ads'], generateAds, state.generatingAds || !state.copy)
-          : el('a',{href:state.adsLink.uri, download:state.adsLink.filename, class:'rl-link', onclick:()=>setTimeout(()=>{state.adsLink=null;render();},1000)}, '⬇ Scarica .txt Ads'),
-        state.adsLink ? btn('btn-s','↺ Rigenera',()=>{state.adsLink=null;state.adsText=null;generateAds();}) : el('div',{})
-      )
-    ) : el('div',{})
+    ) : el('div',{class:'info-note',style:{padding:'12px 0'}},'← Genera prima il copy nello step 3')
   );
 }
 
