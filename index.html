@@ -508,29 +508,52 @@ async function runResearch() {
     try {
       const briefObj = parseJSON(rawBrief);
       state.briefJson = JSON.stringify(briefObj, null, 2);
-    } catch(je) {
+    } catch(je0) {
+     try {
+      state.loadingMsg = 'Sistemo il formato del Brief…'; render();
+      const briefObj = await repairJsonWithModel(rawBrief);
+      state.briefJson = JSON.stringify(briefObj, null, 2);
+     } catch(je) {
       // Brief malformato: salva comunque il testo grezzo (ripulito) e segnala, senza bloccare
       const cleaned = rawBrief.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
       const s = cleaned.indexOf('{'), e = cleaned.lastIndexOf('}');
       state.briefJson = (s>-1 && e>-1) ? cleaned.slice(s,e+1) : cleaned;
-      state.error = '⚠ Il Brief JSON è uscito con un piccolo errore di sintassi. È stato caricato comunque nello step 2: controllalo e correggi il punto evidenziato (di solito una virgola), poi genera il copy.';
+      state.error = '⚠ Il Brief JSON è uscito con un errore di sintassi non riparabile in automatico. È stato caricato comunque nello step 2: correggi il punto evidenziato dall\'indicatore rosso, poi genera il copy.';
+     }
     }
     goToStep(2); saveSession();
   } catch(e) { state.error = 'Errore ricerca: ' + e.message; }
   finally { state.loading = false; render(); }
 }
 
+// Ripara un JSON malformato facendolo correggere al modello (solo sintassi, contenuti invariati)
+async function repairJsonWithModel(brokenText) {
+  const fixData = await apiCall(
+    'Ricevi un JSON non valido e lo restituisci corretto e parsabile. NON cambiare i contenuti: correggi SOLO la sintassi (virgole mancanti o pendenti, parentesi sbilanciate, virgolette non chiuse dentro i testi sostituendole con le angolari). Rispondi SOLO con il JSON corretto, nessun altro testo.',
+    [{ role:'user', content: brokenText }], false, MODEL_RESEARCH, 8000
+  );
+  return parseJSON(extractText(fixData));
+}
+
 async function generateCopy() {
   if (!state.apiKey) return;
   let briefObj;
+  state.loading = true; state.error = ''; render();
   try {
-    briefObj = parseJSON(state.briefJson);        // usa il parser con auto-riparazione
-    state.briefJson = JSON.stringify(briefObj, null, 2);  // riscrive il brief ripulito
+    briefObj = parseJSON(state.briefJson);
   } catch(e) {
-    state.error = 'Brief JSON non valido — correggilo nello step 2 (guarda l\'indicatore rosso sotto l\'editor): ' + e.message;
-    state.step = 2; render(); return;
+    // Brief rotto: lo facciamo riparare dal modello, senza bloccare l'utente
+    try {
+      state.loadingMsg = 'Sistemo il formato del Brief…'; render();
+      briefObj = await repairJsonWithModel(state.briefJson);
+    } catch(e2) {
+      state.loading = false;
+      state.error = 'Brief JSON non valido e non riparabile automaticamente — controlla lo step 2 (indicatore rosso sotto l\'editor): ' + e.message;
+      state.step = 2; render(); return;
+    }
   }
-  state.loading = true; state.loadingMsg = 'Generando il copy dal Brief...'; state.error = ''; render();
+  state.briefJson = JSON.stringify(briefObj, null, 2);  // brief ripulito
+  state.loadingMsg = 'Generando il copy dal Brief...'; render();
   try {
     const data = await apiCall(SYS_COPY, [{ role:'user', content:`BRIEF JSON (unica fonte di verità — ogni numero e claim deve venire da qui):\n${state.briefJson}\n\nGenera il copy completo della landing. JSON puro con questo schema:\n{"brandName":"NomeProdotto™","titolo_1":"titolo angolo piu forte (vedi 4 angoli e esempi)","titolo_2":"titolo con angolo DIVERSO dal primo","subtitle":"sottotitolo = prova tecnica del titolo, max 30 parole","bullets":["<b>Spec con numero</b>: vita quotidiana + contrasto","x5 totali, ordine = gerarchia_funzionalita"],"ctaText":"ATTIVA LO SCONTO","ctaTematizzata":"verbo del beneficio + oggetto del desiderio","marquee":["✨ miglior spec o difetto eliminato","✨ Sconto [sconto_pct]% Attivo Oggi","💸 Pagamento alla Consegna Sicuro"],"vantaggi":[{"titolo":"angle 1 dal brief","testo":"<p>paragrafo a 4 movimenti con <strong>spec</strong></p>"},{"titolo":"angle 2","testo":"<p>...</p>"},{"titolo":"angle 3","testo":"<p>...</p>"}],"faq":[{"domanda":"obiezione 1 in prima persona","risposta":"rassicurazione + spec"},{"domanda":"...x6 dal brief"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro [giorni_reso] giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"pricing":{"title":"Solo per Oggi - [sconto_pct]%","prezzoOriginale":"[prezzo_pieno]","prezzoScontato":"[prezzo_scontato]","items":["1 NomeProdotto™","voci bundle dal brief con (valore €X)","Garanzia [garanzia_anni] anni"]},"cosRicevi":"Ordinando Ora Ricevi:"}` }]);
     if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
