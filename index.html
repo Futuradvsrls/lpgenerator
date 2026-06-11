@@ -160,7 +160,7 @@ const SITES = [{"name": "shopgadgetitalia.com", "url": "https://www.shopgadgetit
 
 const SYS_RESEARCH = `Sei un ricercatore di mercato per landing page direct-response italiane ed europee. Analizzi categorie di prodotti di consumo per un target over 50. Cerchi dati concreti e verificabili: parametri tecnici reali e i loro range, difetti noti della categoria, gerarchia delle funzionalita piu ricercate, usi comuni, linguaggio del mercato. Rispondi sempre in italiano, strutturato e concreto. Riporta solo cio che trovi nelle fonti o nei dati forniti.`;
 
-const SYS_BRIEF = `Sei un analista che sintetizza ricerche di mercato in un Brief JSON strutturato. Il brief sara la UNICA fonte di verita per il copywriting: ogni spec deve avere valore numerico e unita presi dalla ricerca o dai dati prodotto forniti dall'utente. Non inventare numeri: se un dato manca, lascia il campo vuoto. Rispondi SOLO con JSON valido, nessun backtick, nessun testo prima o dopo.`;
+const SYS_BRIEF = `Sei un analista che sintetizza ricerche di mercato in un Brief JSON strutturato. Il brief sara la UNICA fonte di verita per il copywriting: ogni spec deve avere valore numerico e unita presi dalla ricerca o dai dati prodotto forniti dall'utente. Non inventare numeri: se un dato manca, lascia il campo vuoto. Rispondi SOLO con JSON valido e sintatticamente corretto: virgole tra tutti gli elementi, nessuna virgola pendente prima di } o ], tutte le parentesi bilanciate. Nessun backtick, nessun testo prima o dopo. Prima di rispondere rileggi il JSON e verifica che sia parsabile.`;
 
 const SYS_COPY = `Sei un copywriter direct-response italiano per landing page rivolte a un target over 50. Registro: giornalistico, concreto, specifico. VIETATI: aggettivi emotivi (rivoluzionario, incredibile, straordinario), storytelling personale, tecnicismi non spiegati.
 REGOLA SUPREMA: ogni numero, spec e claim deve esistere nel Brief JSON ricevuto. Se un dato non e nel brief, non scriverlo.
@@ -173,7 +173,8 @@ FAQ: 6 obiezioni dal brief formulate in prima persona col linguaggio del target 
 CTA tematizzata: [verbo del beneficio] + [oggetto del desiderio].
 MARQUEE: slot 1 = miglior spec o difetto eliminato; slot 2 = sconto con la percentuale del brief; slot 3 = pagamento alla consegna.
 PRICING items: ogni voce bundle dal brief con (valore €X) se presente; chiusura con la garanzia del brief.
-Rispondi SOLO con JSON valido. Nessun backtick, nessun markdown, nessun testo prima o dopo.`;
+REGOLA JSON CRITICA: dentro i valori testuali NON usare mai virgolette doppie ("). Se devi enfatizzare o citare una parola usa le virgolette angolari «così» o l'apostrofo. Le uniche virgolette doppie ammesse sono quelle che delimitano le chiavi e i valori JSON. Usa <b> e <strong> per il grassetto, mai le virgolette.
+Rispondi SOLO con JSON valido e parsabile. Nessun backtick, nessun markdown, nessun testo prima o dopo.`;
 
 const SYS_CHECK = `Sei un revisore qualita per landing page. Confronti il copy generato con il Brief JSON e segnali SOLO errori reali: numeri diversi tra punti diversi della pagina, numeri assenti dal brief, garanzia o giorni di reso incoerenti tra blocchi (bullet, pricing, FAQ, marquee), percentuali incoerenti, etichette tecniche invertite (caldo/freddo, min/max), testo segnaposto residuo, campi vuoti. Niente segnalazioni stilistiche. Rispondi SOLO con JSON valido: {"ok":true,"errori":[]} oppure {"ok":false,"errori":[{"dove":"blocco","problema":"descrizione","correzione":"proposta"}]}`;
 
@@ -211,20 +212,52 @@ const state = {
 };
 
 // ── API ───────────────────────────────────────────────────────────
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 async function apiCall(system, messages, useWebSearch = false, model = MODEL, maxTokens = 4000) {
   const body = { model: model, max_tokens: maxTokens, system, messages };
   if (useWebSearch) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': state.apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify(body),
-  });
-  return res.json();
+  const maxRetry = 4;
+  for (let attempt = 0; attempt <= maxRetry; attempt++) {
+    let data;
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': state.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify(body),
+      });
+      data = await res.json();
+    } catch(netErr) {
+      if (attempt < maxRetry) { await retryWait(attempt, 'rete instabile'); continue; }
+      return { error: { message: 'Errore di rete: ' + netErr.message } };
+    }
+    // Errori temporanei → ritenta con attesa crescente
+    const et = data && data.error && (data.error.type || '');
+    const em = data && data.error && (data.error.message || '');
+    const temporaneo = /overload/i.test(et) || /overload/i.test(em) || et === 'rate_limit_error' || /rate limit/i.test(em);
+    if (temporaneo && attempt < maxRetry) {
+      await retryWait(attempt, /rate limit/i.test(em+et) ? 'rate limit, attendo' : 'server occupato, riprovo');
+      continue;
+    }
+    return data;
+  }
+}
+
+// Attesa esponenziale con countdown visibile: 5s, 10s, 20s, 40s
+async function retryWait(attempt, motivo) {
+  const secs = 5 * Math.pow(2, attempt);
+  const prev = state.loadingMsg;
+  for (let s = secs; s > 0; s--) {
+    state.loadingMsg = `${motivo}… nuovo tentativo tra ${s}s`;
+    render();
+    await sleep(1000);
+  }
+  state.loadingMsg = prev;
+  render();
 }
 
 function extractText(data) {
@@ -237,8 +270,20 @@ function parseJSON(text) {
   try { return JSON.parse(clean); } catch {}
   const s = clean.indexOf('{'), e = clean.lastIndexOf('}');
   if (s === -1 || e === -1) throw new Error('Risposta non in JSON: ' + clean.slice(0, 150));
-  try { return JSON.parse(clean.slice(s, e + 1)); }
-  catch (err) { throw new Error('JSON malformato: ' + err.message); }
+  const slice = clean.slice(s, e + 1);
+  try { return JSON.parse(slice); } catch {}
+  // Tentativo di riparazione: rimuove virgole pendenti e inserisce virgole mancanti tra }/] e "/{/[
+  try {
+    let fixed = slice
+      .replace(/,(\s*[}\]])/g, '$1')                 // virgola pendente prima di } o ]
+      .replace(/([}\]"])(\s*)("[^"]*"\s*:)/g, '$1,$2$3') // manca virgola prima di una nuova chiave
+      .replace(/([}\]])(\s*)([{\[])/g, '$1,$2$3');   // manca virgola tra due oggetti/array
+    return JSON.parse(fixed);
+  } catch {}
+  // Fallisce: rilancia con flag, così il chiamante puo decidere di non bloccare
+  const err = new Error('JSON malformato: ' + slice.slice(0,120) + '...');
+  err.rawText = slice;
+  throw err;
 }
 
 // ── SESSION ───────────────────────────────────────────────────────
@@ -409,8 +454,7 @@ function injectCopy(template, copy) {
 }
 
 // ── ACTIONS ───────────────────────────────────────────────────────
-// Pausa con countdown visibile, per restare sotto il rate limit (50k token/min, Tier 1)
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+// Pausa con countdown visibile tra le chiamate
 async function pausaRateLimit(secondi, prossimo){
   for(let s=secondi; s>0; s--){
     state.loadingMsg = `Pausa anti rate-limit: ${s}s — poi ${prossimo}`;
@@ -426,30 +470,39 @@ async function runResearch() {
   try {
     // 1A+1B — categoria, difetti noti, gerarchia, usi, paure
     state.loadingMsg = 'Ricerca 1/3: categoria e funzionalità...'; render();
-    const r1 = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Categoria: "${state.form.product}". Cerca online e rispondi con:\n## COME FUNZIONA LA CATEGORIA\nParametri tecnici standard e i loro range reali.\n## DIFETTI NOTI DELLA CATEGORIA\nIl difetto principale + i secondari (le frustrazioni che chi compra conosce già).\n## GERARCHIA FUNZIONALITÀ\nLe funzionalità più ricercate, dalla più importante alla meno importante.\n## USI COMUNI\nCosa ci fanno davvero le persone: scene concrete di vita quotidiana.\n## PAURE E OBIEZIONI DEL TARGET OVER 50\nLe 6 principali, formulate nel suo linguaggio.${userData}` }], true, MODEL_RESEARCH, 2200);
+    const r1 = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Categoria: "${state.form.product}". Cerca online e rispondi con:\n## COME FUNZIONA LA CATEGORIA\nParametri tecnici standard e i loro range reali.\n## DIFETTI NOTI DELLA CATEGORIA\nIl difetto principale + i secondari (le frustrazioni che chi compra conosce già).\n## GERARCHIA FUNZIONALITÀ\nLe funzionalità più ricercate, dalla più importante alla meno importante.\n## USI COMUNI\nCosa ci fanno davvero le persone: scene concrete di vita quotidiana.\n## PAURE E OBIEZIONI DEL TARGET OVER 50\nLe 6 principali, formulate nel suo linguaggio.${userData}` }], true, MODEL_RESEARCH, 3000);
     if (r1.error) throw new Error(r1.error.message||JSON.stringify(r1.error));
     const t1 = extractText(r1);
     if (!t1) throw new Error('Nessuna risposta dalla ricerca 1');
 
     // pausa per non sforare il rate limit al minuto
-    await pausaRateLimit(20, 'contesto competitivo');
+    await pausaRateLimit(3, 'contesto competitivo');
     // 1C — contesto competitivo
     state.loadingMsg = 'Ricerca 2/3: contesto competitivo...'; render();
-    const r2 = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Categoria: "${state.form.product}". Cerca online e rispondi con:\n## MODELLI PIÙ FAMOSI E AMATI\nQuali sono e perché piacciono.\n## LINGUAGGIO DEL MERCATO\nParole tecniche che il mercato usa e il pubblico riconosce.\n## BENCHMARK PER CONTRASTI\nNumeri di riferimento dei modelli noti (pesi, prezzi, prestazioni) utili per confronti del tipo "le tradizionali pesano X / costano Y".` }], true, MODEL_RESEARCH, 2000);
+    const r2 = await apiCall(SYS_RESEARCH, [{ role:'user', content:`Categoria: "${state.form.product}". Cerca online e rispondi con:\n## MODELLI PIÙ FAMOSI E AMATI\nQuali sono e perché piacciono.\n## LINGUAGGIO DEL MERCATO\nParole tecniche che il mercato usa e il pubblico riconosce.\n## BENCHMARK PER CONTRASTI\nNumeri di riferimento dei modelli noti (pesi, prezzi, prestazioni) utili per confronti del tipo "le tradizionali pesano X / costano Y".` }], true, MODEL_RESEARCH, 2800);
     if (r2.error) throw new Error(r2.error.message||JSON.stringify(r2.error));
     const t2 = extractText(r2);
     state.research = t1 + '\n\n──────────── CONTESTO COMPETITIVO ────────────\n\n' + t2;
 
     // pausa prima della sintesi
-    await pausaRateLimit(20, 'sintesi del Brief JSON');
+    await pausaRateLimit(3, 'sintesi del Brief JSON');
     // 1D — sintesi nel Brief JSON
     state.loadingMsg = 'Ricerca 3/3: sintesi nel Brief JSON...'; render();
     const origPrice = state.form.originalPrice || String(Math.round(parseInt(state.form.price)*2));
     const scontoPct = Math.round((1 - parseFloat(state.form.price)/parseFloat(origPrice)) * 100) || 50;
     const r3 = await apiCall(SYS_BRIEF, [{ role:'user', content:`RICERCA:\n${state.research}\n\nPRODOTTO: ${state.form.product}\nPREZZO SCONTATO: ${state.form.price}€ | PREZZO PIENO: ${origPrice}€ | SCONTO: ${scontoPct}%${userData}\n\nCompila questo Brief JSON usando solo dati reali dalla ricerca e dai dati forniti. tipo_angle: "tool" (l'angle è il caso d'uso), "security" (l'angle è la paura risolta) o "savings" (l'angle sono i numeri concreti). Schema:\n{"prodotto":{"nome":"","categoria":"","tipo_angle":""},"target":{"descrizione":"","scene_di_vita":["","",""],"paure":["","",""]},"categoria_mercato":{"difetto_noto_principale":"","difetti_secondari":["",""],"linguaggio_mercato":["",""],"benchmark_contrasto":""},"spec":[{"nome":"","valore":"","unita":"","beneficio":"","contrasto":""}],"gerarchia_funzionalita":["","","","",""],"angles":[{"titolo":"","spec_collegate":[""],"scena":""},{"titolo":"","spec_collegate":[""],"scena":""},{"titolo":"","spec_collegate":[""],"scena":""}],"obiezioni":[{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""},{"domanda":"","risposta_con_spec":""}],"offerta":{"prezzo_pieno":"${origPrice}","prezzo_scontato":"${state.form.price}","sconto_pct":"${scontoPct}","bundle":[{"item":"","valore":""}],"garanzia_anni":"2","giorni_reso":"30"}}` }], false, MODEL_RESEARCH);
     if (r3.error) throw new Error(r3.error.message||JSON.stringify(r3.error));
-    const briefObj = parseJSON(extractText(r3));
-    state.briefJson = JSON.stringify(briefObj, null, 2);
+    const rawBrief = extractText(r3);
+    try {
+      const briefObj = parseJSON(rawBrief);
+      state.briefJson = JSON.stringify(briefObj, null, 2);
+    } catch(je) {
+      // Brief malformato: salva comunque il testo grezzo (ripulito) e segnala, senza bloccare
+      const cleaned = rawBrief.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+      const s = cleaned.indexOf('{'), e = cleaned.lastIndexOf('}');
+      state.briefJson = (s>-1 && e>-1) ? cleaned.slice(s,e+1) : cleaned;
+      state.error = '⚠ Il Brief JSON è uscito con un piccolo errore di sintassi. È stato caricato comunque nello step 2: controllalo e correggi il punto evidenziato (di solito una virgola), poi genera il copy.';
+    }
     goToStep(2); saveSession();
   } catch(e) { state.error = 'Errore ricerca: ' + e.message; }
   finally { state.loading = false; render(); }
@@ -466,7 +519,16 @@ async function generateCopy() {
     if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text = extractText(data);
     if (!text.trim()) throw new Error('Risposta vuota — riprova');
-    const c = parseJSON(text);
+    let c;
+    try {
+      c = parseJSON(text);
+    } catch(je) {
+      // Auto-riparazione: rimanda il JSON rotto al modello chiedendo solo di correggerlo
+      state.loadingMsg = 'Correggo il formato della risposta…'; render();
+      const fixData = await apiCall('Ricevi un JSON non valido e lo restituisci corretto e parsabile. Non cambiare i contenuti, correggi solo la sintassi: virgolette doppie non chiuse dentro i testi (sostituiscile con « »), virgole mancanti o pendenti, parentesi sbilanciate. Rispondi SOLO con il JSON corretto, nessun altro testo.',
+        [{ role:'user', content: text }], false, MODEL_RESEARCH, 4000);
+      c = parseJSON(extractText(fixData));
+    }
     c.headline = c.headline || c.headline_A;
     if (state.realReviews.trim()) c.recensioni = parseRealReviews(state.realReviews);
     state.copy = c;
@@ -759,7 +821,8 @@ function renderStep2() {
         el('span',{class:'tag-b'},'modificabile')
       ),
       el('div',{class:'info-note',style:{marginBottom:'8px'}},'Il copy userà SOLO i dati di questo brief: ogni numero, spec e claim. Modifica qui (angle, spec, obiezioni, bundle, garanzia, reso) e rigenera — tutto il copy a valle si riallinea.'),
-      ta('', state.briefJson, e=>{state.briefJson=e.target.value;}, 18)
+      ta('', state.briefJson, e=>{state.briefJson=e.target.value; const ind=document.getElementById('brief-valid'); if(ind){try{JSON.parse(e.target.value); ind.textContent='✓ JSON valido'; ind.style.color='var(--green)';}catch(err){ind.textContent='✕ '+err.message.slice(0,60); ind.style.color='var(--amber)';}}}, 18),
+      el('div',{id:'brief-valid',style:{fontSize:'11px',fontWeight:'600',marginTop:'6px'}}, (()=>{try{JSON.parse(state.briefJson||'{}'); return '✓ JSON valido';}catch(err){return '✕ '+err.message.slice(0,60);}})())
     ],'card-accent')
   );
 }
