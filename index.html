@@ -523,8 +523,13 @@ async function runResearch() {
 async function generateCopy() {
   if (!state.apiKey) return;
   let briefObj;
-  try { briefObj = JSON.parse(state.briefJson); }
-  catch(e) { state.error = 'Brief JSON non valido — correggilo nello step 2: ' + e.message; render(); return; }
+  try {
+    briefObj = parseJSON(state.briefJson);        // usa il parser con auto-riparazione
+    state.briefJson = JSON.stringify(briefObj, null, 2);  // riscrive il brief ripulito
+  } catch(e) {
+    state.error = 'Brief JSON non valido — correggilo nello step 2 (guarda l\'indicatore rosso sotto l\'editor): ' + e.message;
+    state.step = 2; render(); return;
+  }
   state.loading = true; state.loadingMsg = 'Generando il copy dal Brief...'; state.error = ''; render();
   try {
     const data = await apiCall(SYS_COPY, [{ role:'user', content:`BRIEF JSON (unica fonte di verità — ogni numero e claim deve venire da qui):\n${state.briefJson}\n\nGenera il copy completo della landing. JSON puro con questo schema:\n{"brandName":"NomeProdotto™","titolo_1":"titolo angolo piu forte (vedi 4 angoli e esempi)","titolo_2":"titolo con angolo DIVERSO dal primo","subtitle":"sottotitolo = prova tecnica del titolo, max 30 parole","bullets":["<b>Spec con numero</b>: vita quotidiana + contrasto","x5 totali, ordine = gerarchia_funzionalita"],"ctaText":"ATTIVA LO SCONTO","ctaTematizzata":"verbo del beneficio + oggetto del desiderio","marquee":["✨ miglior spec o difetto eliminato","✨ Sconto [sconto_pct]% Attivo Oggi","💸 Pagamento alla Consegna Sicuro"],"vantaggi":[{"titolo":"angle 1 dal brief","testo":"<p>paragrafo a 4 movimenti con <strong>spec</strong></p>"},{"titolo":"angle 2","testo":"<p>...</p>"},{"titolo":"angle 3","testo":"<p>...</p>"}],"faq":[{"domanda":"obiezione 1 in prima persona","risposta":"rassicurazione + spec"},{"domanda":"...x6 dal brief"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro [giorni_reso] giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"pricing":{"title":"Solo per Oggi - [sconto_pct]%","prezzoOriginale":"[prezzo_pieno]","prezzoScontato":"[prezzo_scontato]","items":["1 NomeProdotto™","voci bundle dal brief con (valore €X)","Garanzia [garanzia_anni] anni"]},"cosRicevi":"Ordinando Ora Ricevi:"}` }]);
