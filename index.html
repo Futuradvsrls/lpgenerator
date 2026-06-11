@@ -170,7 +170,7 @@ I 4 ANGOLI tra cui scegliere il piu forte (non applicarli tutti, scegli UNO per 
 2. SUPERLATIVO DI CATEGORIA + NUMERI: il primato misurato (es. "la piu piccola e potente: 2,8kg, 4 ore, 125 Bar").
 3. ELIMINAZIONE DEL VINCOLO STORICO: il limite della categoria che sparisce (es. SENZA TUBO, SENZA FILI, attacco universale su OGNI piscina).
 4. TECNOLOGIA-NOME PREMIUM: la specifica che da autorevolezza (es. motore DC a magneti permanenti, RGBIC IP68, acciaio cromo-vanadio certificato).
-Genera DUE titoli (campo titolo_1 e titolo_2) scegliendo DUE angoli DIVERSI tra i 4, quello piu adatto al prodotto per primo.
+Genera ESATTAMENTE 5 titoli (campo titoli). Ogni titolo deve CONDENSARE in UNA SOLA frase semplice e potente le caratteristiche piu forti del prodotto messe insieme (non una sola caratteristica: le 2-4 leve chiave che lo rendono desiderabile), così il target capisce subito perche conviene. REGOLA DI APERTURA OBBLIGATORIA: ogni titolo inizia nominando la natura del prodotto, con articolo + tipo di prodotto + qualifica di valore adatta, seguito da «che…» (es. «L'idropulitrice professionale che…», «La friggitrice ad aria a doppio cestello che…»). Lunghezza 15-30 parole, frase scorrevole e diretta (non un elenco di specifiche separate da virgole). Inserisci i numeri impressionanti dal brief (bar, kg, litri, pezzi). I 5 titoli condensano le STESSE caratteristiche chiave ma DIFFERISCONO per impostazione: cambia quale caratteristica mettono in apertura/enfasi e la formulazione, così hai una panoramica di versioni tra cui scegliere la piu efficace — NON 5 titoli incentrati ognuno su una sola caratteristica diversa. VIETATO costruire un titolo su pagamento alla consegna, contrassegno, spedizione, reso o garanzia: non sono caratteristiche del prodotto. Registro giornalistico e concreto (no «ti cambia la vita», no superlativi gonfiati). In angolo scrivi quale caratteristica fa da apertura/enfasi in quella versione (es. «Apre da potenza», «Apre da leggerezza», «Apre da versatilita»).
 ESEMPI REALI del registro giusto (imita lo stile, NON copiare i prodotti):
 - "Condizionatore Portatile da 18.000 BTU SENZA TUBO che raffredda fino a 100 mq in soli 6 min - Ultra silenzioso per dormire bene" (angolo 1+3)
 - "L'Idropulitrice a Batteria piu piccola e potente sul mercato: pesa solo 2,8Kg, dura 4 ore continue e mantiene il getto costante a 125 Bar" (angolo 2)
@@ -178,7 +178,7 @@ ESEMPI REALI del registro giusto (imita lo stile, NON copiare i prodotti):
 - "La sega che taglia con precisione e sicurezza senza fare polvere qualsiasi materiale in modo facile e veloce" (angolo 1)
 - "Ventilatore da Soffitto con Luce LED dimmerabile e pale ultra silenziose con motore DC a magneti permanenti" (angolo 4)
 - "Il Set Utensili Professionale da 89 Pezzi in Valigetta Blindata in Alluminio con strumenti in Acciaio Cromo-Vanadio Certificato" (angolo 4)
-SOTTOTITOLO: e SEMPRE la prova tecnica del titolo - il come funziona o le specifiche che rendono credibile la promessa. Mai ripetere il titolo. Esempi: "lavoro continuo grazie alle 2 batterie potenti incluse e zero manutenzione", "La prima tecnologia tubeless con dissipazione interna del calore".
+SOTTOTITOLO: rafforza il titolo aggiungendo gli ELEMENTI TECNICI DI SUPPORTO e i PLUS che rendono l'offerta piu appetibile e che NON stanno gia nel titolo: bonus/omaggi e accessori inclusi (es. «due batterie ricaricabili in omaggio», «3 ugelli intercambiabili inclusi», «set di accessori in dotazione»), specifiche tecniche aggiuntive credibili (autonomia, materiali, certificazioni, garanzia tecnica) e dotazione del kit. Prendi questi elementi SOLO dal brief, non inventarli; se nel brief non ci sono omaggi, usa le specifiche tecniche di supporto. Mai ripetere il titolo. Max ~30 parole. Esempi: «Include due batterie ricaricabili in omaggio per 4 ore di autonomia continua e 3 ugelli per ogni superficie», «lavoro continuo grazie alle 2 batterie potenti incluse e zero manutenzione».
 BULLET a 3 movimenti: <b>[spec con numero]</b>: [traduzione nella vita quotidiana del target, linguaggio parlato] + [contrasto con l'alternativa peggiore che il target ha gia vissuto]. Almeno 3 bullet su 5 con numeri. Ordine = gerarchia_funzionalita del brief.
 VANTAGGI: 3 paragrafi a 4 movimenti (~100 parole), uno per angle. Il TITOLO del paragrafo nomina la caratteristica SPECIFICA e differenziante (es. «Testa orientabile a 90° per i punti che gli altri non raggiungono»), MAI un beneficio generico (vietati «Libertà di lavoro», «Semplicità assoluta», «Leggerezza e comfort»). Struttura: 1) il limite concreto che la caratteristica supera 2) come funziona, spec in <strong> 3) scena di vita specifica dal brief 4) cosa diventa possibile grazie a questa caratteristica. Se tipo_angle=tool domina la scena d'uso; se security il paragrafo si apre sulla paura specifica; se savings ogni frase quantifica con numeri.
 FAQ: 6 obiezioni dal brief formulate in prima persona col linguaggio del target (es. "il MIO soffitto...", "troppo complicata PER ME?") + 2 fisse (reso con i giorni_reso del brief, spedizione 24-48 ore). Risposta = rassicurazione + spec dal brief + contrasto dove esiste.
@@ -557,7 +557,7 @@ async function generateCopy() {
   state.briefJson = JSON.stringify(briefObj, null, 2);  // brief ripulito
   state.loadingMsg = 'Generando il copy dal Brief...'; render();
   try {
-    const data = await apiCall(SYS_COPY, [{ role:'user', content:`BRIEF JSON (unica fonte di verità — ogni numero e claim deve venire da qui):\n${state.briefJson}\n\nGenera il copy completo della landing. JSON puro con questo schema:\n{"brandName":"NomeProdotto™","titolo_1":"titolo angolo piu forte (vedi 4 angoli e esempi)","titolo_2":"titolo con angolo DIVERSO dal primo","subtitle":"sottotitolo = prova tecnica del titolo, max 30 parole","bullets":["<b>Spec con numero</b>: vita quotidiana + contrasto","x5 totali, ordine = gerarchia_funzionalita"],"ctaText":"ATTIVA LO SCONTO","ctaTematizzata":"verbo del beneficio + oggetto del desiderio","marquee":["✨ miglior spec o difetto eliminato","✨ Sconto [sconto_pct]% Attivo Oggi","💸 Pagamento alla Consegna Sicuro"],"vantaggi":[{"titolo":"angle 1 dal brief","testo":"<p>paragrafo a 4 movimenti con <strong>spec</strong></p>"},{"titolo":"angle 2","testo":"<p>...</p>"},{"titolo":"angle 3","testo":"<p>...</p>"}],"faq":[{"domanda":"obiezione 1 in prima persona","risposta":"rassicurazione + spec"},{"domanda":"...x6 dal brief"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro [giorni_reso] giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"pricing":{"title":"Solo per Oggi - [sconto_pct]%","prezzoOriginale":"[prezzo_pieno]","prezzoScontato":"[prezzo_scontato]","items":["1 NomeProdotto™","voci bundle dal brief con (valore €X)","Garanzia [garanzia_anni] anni"]},"cosRicevi":"Ordinando Ora Ricevi:","recensioni":[{"nome":"Nome e iniziale cognome italiani realistici","eta_citta":"XX anni, Città","paura":"il problema concreto e specifico che questa recensione risolve","testo":"40-60 parole: parte dalla situazione precisa in cui il problema si presentava e mostra come il prodotto lo ha risolto, con un dettaglio concreto dal brief, registro sobrio da recensione vera","stelle":5},{"nome":"Nome 2","eta_citta":"XX anni, Città","paura":"problema DIVERSO dal 1","testo":"come sopra, risolve il problema 2","stelle":5},{"nome":"Nome 3","eta_citta":"XX anni, Città","paura":"problema DIVERSO da 1 e 2","testo":"come sopra, risolve il problema 3","stelle":4}]}` }]);
+    const data = await apiCall(SYS_COPY, [{ role:'user', content:`BRIEF JSON (unica fonte di verità — ogni numero e claim deve venire da qui):\n${state.briefJson}\n\nGenera il copy completo della landing. JSON puro con questo schema:\n{"brandName":"NomeProdotto™","titoli":[{"angolo":"apertura/enfasi caratteristica 1","t":"L'[tipo prodotto] [qualifica] che + frase che condensa le caratteristiche chiave, 15-30 parole"},{"angolo":"apertura/enfasi diversa","t":"stessa sostanza, ordine/enfasi diversi"},{"angolo":"apertura/enfasi diversa","t":"variante 3"},{"angolo":"apertura/enfasi diversa","t":"variante 4"},{"angolo":"apertura/enfasi diversa","t":"variante 5"}],"subtitle":"sottotitolo = bonus/omaggi inclusi + specifiche tecniche di supporto dal brief, non ripete il titolo, max 30 parole","bullets":["<b>Spec con numero</b>: vita quotidiana + contrasto","x5 totali, ordine = gerarchia_funzionalita"],"ctaText":"ATTIVA LO SCONTO","ctaTematizzata":"verbo del beneficio + oggetto del desiderio","marquee":["✨ miglior spec o difetto eliminato","✨ Sconto [sconto_pct]% Attivo Oggi","💸 Pagamento alla Consegna Sicuro"],"vantaggi":[{"titolo":"angle 1 dal brief","testo":"<p>paragrafo a 4 movimenti con <strong>spec</strong></p>"},{"titolo":"angle 2","testo":"<p>...</p>"},{"titolo":"angle 3","testo":"<p>...</p>"}],"faq":[{"domanda":"obiezione 1 in prima persona","risposta":"rassicurazione + spec"},{"domanda":"...x6 dal brief"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro [giorni_reso] giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"pricing":{"title":"Solo per Oggi - [sconto_pct]%","prezzoOriginale":"[prezzo_pieno]","prezzoScontato":"[prezzo_scontato]","items":["1 NomeProdotto™","voci bundle dal brief con (valore €X)","Garanzia [garanzia_anni] anni"]},"cosRicevi":"Ordinando Ora Ricevi:","recensioni":[{"nome":"Nome e iniziale cognome italiani realistici","eta_citta":"XX anni, Città","paura":"il problema concreto e specifico che questa recensione risolve","testo":"40-60 parole: parte dalla situazione precisa in cui il problema si presentava e mostra come il prodotto lo ha risolto, con un dettaglio concreto dal brief, registro sobrio da recensione vera","stelle":5},{"nome":"Nome 2","eta_citta":"XX anni, Città","paura":"problema DIVERSO dal 1","testo":"come sopra, risolve il problema 2","stelle":5},{"nome":"Nome 3","eta_citta":"XX anni, Città","paura":"problema DIVERSO da 1 e 2","testo":"come sopra, risolve il problema 3","stelle":4}]}` }]);
     if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text = extractText(data);
     if (!text.trim()) throw new Error('Risposta vuota — riprova');
@@ -571,8 +571,11 @@ async function generateCopy() {
         [{ role:'user', content: text }], false, MODEL_RESEARCH, 4000);
       c = parseJSON(extractText(fixData));
     }
-    c.headline_A = c.titolo_1 || c.headline_A;
-    c.headline_B = c.titolo_2 || c.headline_B;
+    let _tit = Array.isArray(c.titoli) ? c.titoli.map(x=> typeof x==='string' ? {t:x,angolo:''} : x).filter(x=> x && x.t) : [];
+    if (!_tit.length) _tit = [c.titolo_1, c.titolo_2].filter(Boolean).map(t=>({t,angolo:''}));
+    c.titoli = _tit;
+    c.headline_A = _tit[0] ? _tit[0].t : (c.titolo_1 || c.headline_A);
+    c.headline_B = _tit[1] ? _tit[1].t : (c.titolo_2 || c.headline_B);
     c.headline = c.headline || c.headline_A;
     c._recensioniAI = Array.isArray(c.recensioni) ? c.recensioni.slice() : [];
     if (state.realReviews.trim()) c.recensioni = parseRealReviews(state.realReviews);
@@ -881,10 +884,11 @@ function renderStep3() {
         el('span',{style:{fontSize:'15px',fontWeight:'700'}},c.brandName),
         el('span',{class:'tag-g'},'Generato dal Brief')
       ),
-      lbl('Titolo — scegli quale pubblicare (due angoli diversi)'),
+      lbl('Titolo — scegli quale pubblicare (panoramica di angoli diversi)'),
       el('div',{style:{display:'grid',gap:'8px',marginBottom:'10px'}},
-        ...[[c.headline_A,'Opzione 1'],[c.headline_B,'Opzione 2']].filter(x=>x[0]).map(([t,label])=>
-          el('div',{
+        ...((c.titoli&&c.titoli.length?c.titoli:[{t:c.headline_A,angolo:'Opzione 1'},{t:c.headline_B,angolo:'Opzione 2'}]).filter(x=>x&&x.t).map((tit,i)=>{
+          const t=tit.t, label=tit.angolo||('Opzione '+(i+1));
+          return el('div',{
             onclick:()=>{c.headline=t;saveSession();render();},
             style:{
               cursor:'pointer',padding:'10px 12px',borderRadius:'8px',fontSize:'13px',lineHeight:'1.5',
@@ -894,7 +898,8 @@ function renderStep3() {
           },
             el('span',{style:{fontSize:'10px',fontWeight:'700',color:'var(--accent)',display:'block',marginBottom:'3px'}}, (c.headline===t?'✓ ':'')+label),
             t
-          )
+          );
+        })
         )
       ),
       el('div',{class:'card-inner',style:{fontSize:'13.5px',lineHeight:'1.65',fontWeight:'600',marginBottom:'12px',borderLeft:'3px solid var(--accent)'}},c.headline),
