@@ -182,6 +182,8 @@ SOTTOTITOLO: e SEMPRE la prova tecnica del titolo - il come funziona o le specif
 BULLET a 3 movimenti: <b>[spec con numero]</b>: [traduzione nella vita quotidiana del target, linguaggio parlato] + [contrasto con l'alternativa peggiore che il target ha gia vissuto]. Almeno 3 bullet su 5 con numeri. Ordine = gerarchia_funzionalita del brief.
 VANTAGGI: 3 paragrafi a 4 movimenti (~100 parole), uno per angle. Il TITOLO del paragrafo nomina la caratteristica SPECIFICA e differenziante (es. «Testa orientabile a 90° per i punti che gli altri non raggiungono»), MAI un beneficio generico (vietati «Libertà di lavoro», «Semplicità assoluta», «Leggerezza e comfort»). Struttura: 1) il limite concreto che la caratteristica supera 2) come funziona, spec in <strong> 3) scena di vita specifica dal brief 4) cosa diventa possibile grazie a questa caratteristica. Se tipo_angle=tool domina la scena d'uso; se security il paragrafo si apre sulla paura specifica; se savings ogni frase quantifica con numeri.
 FAQ: 6 obiezioni dal brief formulate in prima persona col linguaggio del target (es. "il MIO soffitto...", "troppo complicata PER ME?") + 2 fisse (reso con i giorni_reso del brief, spedizione 24-48 ore). Risposta = rassicurazione + spec dal brief + contrasto dove esiste.
+RECENSIONI: genera ESATTAMENTE 3 recensioni, ognuna centrata sulla RISOLUZIONE DI UN PROBLEMA CONCRETO E SPECIFICO che QUESTO prodotto risolve per il target over 50. Ogni recensione descrive: 1) una situazione reale e precisa in cui il problema si presentava (es. il muschio fra le fughe del cortile, le fughe del box che il decespugliatore non raggiungeva, il forno che scaldava troppo la cucina d'estate) — MAI un problema vago tipo «cercavo qualcosa di buono»; 2) come il prodotto lo ha risolto, con UN dettaglio concreto e verificabile dal brief (una spec con numero, una scena d'uso precisa). I 3 problemi devono essere tutti DIVERSI tra loro e plausibili per il prodotto. Il problema è la spina dorsale della recensione: il dubbio/paura iniziale («temevo non avesse abbastanza pressione», «pensavo fosse troppo complicata») nasce SEMPRE dal problema specifico, non da paure generiche. Pagamento alla consegna, spedizione veloce e facilità d'uso possono comparire SOLO come breve chiusura/plus di una recensione, MAI come argomento principale: al massimo in una sola delle tre, in una frase finale. VIETATO costruire una recensione attorno a «pagare prima e non fidarsi» o «arriva subito»: suonano finte e generiche. Registro sobrio da recensione vera verificata, MAI melodrammatico, MAI promozionale, niente superlativi. 40-60 parole l'una. Il campo paura serve a te: scrivici il problema specifico che la recensione risolve, così non ti ripeti.
+GENERE DEI NOMI: scegli il genere dei nomi (femminile o maschile) in base a chi compra e usa davvero QUESTO prodotto. Prodotti da cucina, casa, pulizia, bellezza, salute → in prevalenza nomi femminili; utensili, attrezzi, giardinaggio, fai-da-te, auto, sicurezza, tecnologia → in prevalenza nomi maschili; prodotti neutri → mix bilanciato. Tieni comunque almeno un nome dell'altro genere per realismo. Usa Nome + iniziale del cognome puntata (es. «Giuseppe M.», «Carla R.»). La foto viene scelta in automatico dal sistema in base al genere del nome, quindi basta che il nome sia chiaramente maschile o femminile.
 CTA tematizzata: [verbo del beneficio] + [oggetto del desiderio].
 MARQUEE: slot 1 = miglior spec o difetto eliminato; slot 2 = sconto con la percentuale del brief; slot 3 = pagamento alla consegna.
 PRICING items: ogni voce bundle dal brief con (valore €X) se presente; chiusura con la garanzia del brief.
@@ -555,7 +557,7 @@ async function generateCopy() {
   state.briefJson = JSON.stringify(briefObj, null, 2);  // brief ripulito
   state.loadingMsg = 'Generando il copy dal Brief...'; render();
   try {
-    const data = await apiCall(SYS_COPY, [{ role:'user', content:`BRIEF JSON (unica fonte di verità — ogni numero e claim deve venire da qui):\n${state.briefJson}\n\nGenera il copy completo della landing. JSON puro con questo schema:\n{"brandName":"NomeProdotto™","titolo_1":"titolo angolo piu forte (vedi 4 angoli e esempi)","titolo_2":"titolo con angolo DIVERSO dal primo","subtitle":"sottotitolo = prova tecnica del titolo, max 30 parole","bullets":["<b>Spec con numero</b>: vita quotidiana + contrasto","x5 totali, ordine = gerarchia_funzionalita"],"ctaText":"ATTIVA LO SCONTO","ctaTematizzata":"verbo del beneficio + oggetto del desiderio","marquee":["✨ miglior spec o difetto eliminato","✨ Sconto [sconto_pct]% Attivo Oggi","💸 Pagamento alla Consegna Sicuro"],"vantaggi":[{"titolo":"angle 1 dal brief","testo":"<p>paragrafo a 4 movimenti con <strong>spec</strong></p>"},{"titolo":"angle 2","testo":"<p>...</p>"},{"titolo":"angle 3","testo":"<p>...</p>"}],"faq":[{"domanda":"obiezione 1 in prima persona","risposta":"rassicurazione + spec"},{"domanda":"...x6 dal brief"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro [giorni_reso] giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"pricing":{"title":"Solo per Oggi - [sconto_pct]%","prezzoOriginale":"[prezzo_pieno]","prezzoScontato":"[prezzo_scontato]","items":["1 NomeProdotto™","voci bundle dal brief con (valore €X)","Garanzia [garanzia_anni] anni"]},"cosRicevi":"Ordinando Ora Ricevi:"}` }]);
+    const data = await apiCall(SYS_COPY, [{ role:'user', content:`BRIEF JSON (unica fonte di verità — ogni numero e claim deve venire da qui):\n${state.briefJson}\n\nGenera il copy completo della landing. JSON puro con questo schema:\n{"brandName":"NomeProdotto™","titolo_1":"titolo angolo piu forte (vedi 4 angoli e esempi)","titolo_2":"titolo con angolo DIVERSO dal primo","subtitle":"sottotitolo = prova tecnica del titolo, max 30 parole","bullets":["<b>Spec con numero</b>: vita quotidiana + contrasto","x5 totali, ordine = gerarchia_funzionalita"],"ctaText":"ATTIVA LO SCONTO","ctaTematizzata":"verbo del beneficio + oggetto del desiderio","marquee":["✨ miglior spec o difetto eliminato","✨ Sconto [sconto_pct]% Attivo Oggi","💸 Pagamento alla Consegna Sicuro"],"vantaggi":[{"titolo":"angle 1 dal brief","testo":"<p>paragrafo a 4 movimenti con <strong>spec</strong></p>"},{"titolo":"angle 2","testo":"<p>...</p>"},{"titolo":"angle 3","testo":"<p>...</p>"}],"faq":[{"domanda":"obiezione 1 in prima persona","risposta":"rassicurazione + spec"},{"domanda":"...x6 dal brief"},{"domanda":"Come funziona il reso?","risposta":"Puoi restituirlo entro [giorni_reso] giorni senza costi aggiuntivi."},{"domanda":"Quanto impiega l'ordine ad arrivare?","risposta":"Spedizione in 24-48 ore tramite corriere espresso."}],"pricing":{"title":"Solo per Oggi - [sconto_pct]%","prezzoOriginale":"[prezzo_pieno]","prezzoScontato":"[prezzo_scontato]","items":["1 NomeProdotto™","voci bundle dal brief con (valore €X)","Garanzia [garanzia_anni] anni"]},"cosRicevi":"Ordinando Ora Ricevi:","recensioni":[{"nome":"Nome e iniziale cognome italiani realistici","eta_citta":"XX anni, Città","paura":"il problema concreto e specifico che questa recensione risolve","testo":"40-60 parole: parte dalla situazione precisa in cui il problema si presentava e mostra come il prodotto lo ha risolto, con un dettaglio concreto dal brief, registro sobrio da recensione vera","stelle":5},{"nome":"Nome 2","eta_citta":"XX anni, Città","paura":"problema DIVERSO dal 1","testo":"come sopra, risolve il problema 2","stelle":5},{"nome":"Nome 3","eta_citta":"XX anni, Città","paura":"problema DIVERSO da 1 e 2","testo":"come sopra, risolve il problema 3","stelle":4}]}` }]);
     if (data.error) throw new Error(data.error.message||JSON.stringify(data.error));
     const text = extractText(data);
     if (!text.trim()) throw new Error('Risposta vuota — riprova');
@@ -572,6 +574,7 @@ async function generateCopy() {
     c.headline_A = c.titolo_1 || c.headline_A;
     c.headline_B = c.titolo_2 || c.headline_B;
     c.headline = c.headline || c.headline_A;
+    c._recensioniAI = Array.isArray(c.recensioni) ? c.recensioni.slice() : [];
     if (state.realReviews.trim()) c.recensioni = parseRealReviews(state.realReviews);
     state.copy = c;
     state.check = null;
@@ -942,13 +945,22 @@ function renderStep3() {
       ]),
       el('div',{},
         card([
-          lbl('Recensioni — incolla quelle reali raccolte (una per riga: Nome | 64 anni, Città | testo | stelle)'),
+          lbl('Recensioni — generate dall\'AI per sciogliere le paure del target. Per usare recensioni reali incollale qui (una per riga: Nome | 64 anni, Città | testo | stelle) e sostituiranno quelle generate'),
           ta('Giuseppe M. | 64 anni, Bergamo | Testo della recensione reale | 5', state.realReviews, e=>{
             state.realReviews = e.target.value;
-            if (state.copy) state.copy.recensioni = parseRealReviews(state.realReviews);
+            if (state.copy) state.copy.recensioni = state.realReviews.trim() ? parseRealReviews(state.realReviews) : (state.copy._recensioniAI||[]);
             localStorage.setItem('lpg_reviews_draft', state.realReviews);
           }, 6),
-          el('div',{class:'info-note'}, (c.recensioni&&c.recensioni.length) ? `✓ ${c.recensioni.length} recensioni pronte per l'iniezione` : 'Vuoto: il blocco recensioni del template resta invariato, lo completi dopo in Elementor.')
+          ...(c.recensioni&&c.recensioni.length ? c.recensioni.map(r=>el('div',{class:'rev-card'},
+            el('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'3px',gap:'4px',flexWrap:'wrap'}},
+              el('span',{style:{fontSize:'12.5px',fontWeight:'600'}},r.nome),
+              el('span',{style:{color:'var(--text-muted)',fontSize:'11px'}},r.eta_citta)
+            ),
+            el('div',{style:{color:'var(--amber)',fontSize:'12px',marginBottom:'4px'}},'★'.repeat(r.stelle||5)+'☆'.repeat(5-(r.stelle||5))),
+            r.paura ? el('div',{style:{display:'inline-block',fontSize:'10.5px',color:'var(--accent)',border:'1px solid var(--border)',borderRadius:'4px',padding:'1px 6px',marginBottom:'4px'}},'✓ Risolve: '+r.paura) : null,
+            el('div',{style:{color:'var(--text-sub)',fontSize:'12px',lineHeight:'1.5'}},r.testo)
+          )) : []),
+          el('div',{class:'info-note'}, (c.recensioni&&c.recensioni.length) ? `✓ ${c.recensioni.length} recensioni pronte per l'iniezione${state.realReviews.trim()?' (reali incollate)':' (generate dall\'AI)'}` : 'Vuoto: il blocco recensioni del template resta invariato, lo completi dopo in Elementor.')
         ]),
         card([
           lbl('Dati azienda footer'),
@@ -992,7 +1004,7 @@ function renderStep4() {
                ['5 bullet points','caratteristiche premium'], ['Marquee ×3',state.copy.marquee?.[0]],
                ['Pricing ×2',`${state.copy.pricing?.prezzoScontato}€ (era ${state.copy.pricing?.prezzoOriginale}€)`],
                ['3 vantaggi','titoli + testi'], ['8 FAQ','domande + risposte'],
-               ['Recensioni', (state.copy.recensioni&&state.copy.recensioni.length) ? state.copy.recensioni.length+' reali incollate' : 'nessuna — template invariato'],
+               ['Recensioni', (state.copy.recensioni&&state.copy.recensioni.length) ? state.copy.recensioni.length+(state.realReviews.trim()?' reali incollate':' generate dall\'AI') : 'nessuna — template invariato'],
                ['Azienda footer', state.aziendaCfg.nome || 'non impostata — template invariato'],
           ].map(([k,v])=>el('div',{style:{display:'flex',gap:'6px',fontSize:'12px',padding:'3px 0'}},
             el('span',{style:{color:'var(--green)',flexShrink:'0'}},'✓'),
