@@ -691,9 +691,9 @@ function renderStep1() {
         el('div',{},lbl('Paese'),sel),
       ),
       el('div',{style:{marginBottom:'14px'}},
-        lbl('Brief specifico — opzionale'),
-        ta('Cita competitor, bundle, caratteristiche volute...',state.form.brief,e=>{state.form.brief=e.target.value;},5),
-        el('div',{class:'info-note'},'Se citi modelli reali, la ricerca li cerca online.')
+        lbl('Dati prodotto — opzionale (spec, modelli da citare, bundle)'),
+        ta('es. 125 bar, 2 batterie 56V, testata in ottone, peso 2,8kg... oppure modelli competitor da analizzare',state.form.brief,e=>{state.form.brief=e.target.value;},5),
+        el('div',{class:'info-note'},'Fonte primaria per le spec del Brief JSON: i numeri che inserisci qui finiscono dritti nel brief. Se vuoto, la ricerca lavora solo dal web. Il Brief JSON vero e proprio viene generato automaticamente allo step 2.')
       ),
       // Import research toggle
       el('div',{style:{marginBottom:'12px'}},
